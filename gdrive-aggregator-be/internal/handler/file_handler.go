@@ -49,6 +49,7 @@ func (h *FileHandler) ListFiles(c *gin.Context) {
 	accountIDStr := c.Query("account_id")
 	search := c.Query("search")
 	parentID := c.Query("parent_id")
+	fileType := c.Query("type")
 	limitStr := c.DefaultQuery("limit", "20")
 	offsetStr := c.DefaultQuery("offset", "0")
 
@@ -67,7 +68,7 @@ func (h *FileHandler) ListFiles(c *gin.Context) {
 	}
 	offset, _ := strconv.Atoi(offsetStr)
 
-	files, total, err := h.fileRepo.FindAll(accountID, search, parentID, limit, offset)
+	files, total, err := h.fileRepo.FindAll(accountID, search, parentID, fileType, limit, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorResponse{
 			Success: false,

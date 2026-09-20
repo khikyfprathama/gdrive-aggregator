@@ -274,7 +274,7 @@ export const FileDetailModal: React.FC<FileDetailModalProps> = ({
               </button>
             ) : (
               <>
-                {isImg && (
+                {!isFolder && (
                   <button
                     onClick={() => {
                       onPreview(file);

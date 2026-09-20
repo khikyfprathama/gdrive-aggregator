@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"strings"
 
 	"gdrive-aggregator-be/internal/model"
 	"gorm.io/gorm"
@@ -13,7 +14,7 @@ type FileRepository interface {
 	FindByID(id uint) (*model.FileRecord, error)
 	FindByIDs(ids []uint) ([]model.FileRecord, error)
 	FindByDriveFileID(driveFileID string) (*model.FileRecord, error)
-	FindAll(accountID uint, search string, parentID string, limit, offset int) ([]model.FileRecord, int64, error)
+	FindAll(accountID uint, search string, parentID string, fileType string, limit, offset int) ([]model.FileRecord, int64, error)
 	UpdateThumbnailLink(id uint, thumbnailLink string) error
 	Delete(id uint) error
 	DeleteBatch(ids []uint) error
@@ -89,7 +90,7 @@ func (r *fileRepository) FindByDriveFileID(driveFileID string) (*model.FileRecor
 	return &file, nil
 }
 
-func (r *fileRepository) FindAll(accountID uint, search string, parentID string, limit, offset int) ([]model.FileRecord, int64, error) {
+func (r *fileRepository) FindAll(accountID uint, search string, parentID string, fileType string, limit, offset int) ([]model.FileRecord, int64, error) {
 	var files []model.FileRecord
 	var total int64
 
@@ -111,6 +112,45 @@ func (r *fileRepository) FindAll(accountID uint, search string, parentID string,
 
 	if search != "" {
 		query = query.Where("file_records.name LIKE ?", "%"+search+"%")
+	}
+
+	if fileType != "" && fileType != "all" {
+		switch strings.ToLower(fileType) {
+		case "folders":
+			query = query.Where("file_records.is_folder = ? OR file_records.mime_type = ?", true, "application/vnd.google-apps.folder")
+		case "docs":
+			query = query.Where("file_records.is_folder = ? AND ("+
+				"file_records.mime_type LIKE ? OR file_records.mime_type LIKE ? OR file_records.mime_type LIKE ? OR file_records.mime_type LIKE ? OR file_records.mime_type LIKE ? OR "+
+				"file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ?)",
+				false,
+				"%pdf%", "%document%", "%text%", "%sheet%", "%presentation%",
+				"%.pdf", "%.doc%", "%.docx", "%.txt", "%.md", "%.xls%", "%.xlsx", "%.csv",
+			)
+		case "media":
+			query = query.Where("file_records.is_folder = ? AND ("+
+				"file_records.mime_type LIKE ? OR file_records.mime_type LIKE ? OR file_records.mime_type LIKE ? OR "+
+				"file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR "+
+				"file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ?)",
+				false,
+				"image/%", "video/%", "audio/%",
+				"%.jpg", "%.jpeg", "%.png", "%.gif", "%.webp", "%.svg",
+				"%.mp4", "%.mkv", "%.webm", "%.mov", "%.mp3", "%.wav",
+			)
+		case "archives":
+			query = query.Where("file_records.is_folder = ? AND ("+
+				"file_records.mime_type LIKE ? OR file_records.mime_type LIKE ? OR file_records.mime_type LIKE ? OR file_records.mime_type LIKE ? OR "+
+				"file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ?)",
+				false,
+				"%zip%", "%compressed%", "%archive%", "%tar%",
+				"%.zip", "%.rar", "%.7z", "%.tar%", "%.gz", "%.bz2", "%.xz", "%.iso",
+			)
+		case "code":
+			query = query.Where("file_records.is_folder = ? AND ("+
+				"file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ? OR file_records.name LIKE ?)",
+				false,
+				"%.js", "%.ts", "%.jsx", "%.tsx", "%.go", "%.py", "%.json", "%.html", "%.css", "%.sql", "%.sh", "%.yaml", "%.yml", "%.xml",
+			)
+		}
 	}
 
 	err := query.Count(&total).Error

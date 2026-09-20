@@ -31,6 +31,7 @@ export function App() {
   // Search, Filters & Pagination
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterAccountId, setFilterAccountId] = useState<number>(0);
+  const [typeFilter, setTypeFilter] = useState<'all' | 'folders' | 'docs' | 'media' | 'archives' | 'code'>('all');
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(20);
   const [folderTrail, setFolderTrail] = useState<{ id: string; name: string }[]>([]);
@@ -60,6 +61,7 @@ export function App() {
       const filesData = await apiService.getFiles({
         account_id: filterAccountId > 0 ? filterAccountId : undefined,
         search: searchQuery || undefined,
+        type: typeFilter === 'all' ? undefined : typeFilter,
         parent_id: currentFolder ? currentFolder.id : undefined,
         limit: pageSize === -1 ? 5000 : pageSize,
         offset: pageSize === -1 ? 0 : (page - 1) * pageSize,
@@ -72,7 +74,7 @@ export function App() {
     } finally {
       setLoading(false);
     }
-  }, [filterAccountId, searchQuery, folderTrail, page, pageSize, showToast]);
+  }, [filterAccountId, searchQuery, typeFilter, folderTrail, page, pageSize, showToast]);
 
   const handleEnterFolder = (folder: { id: string; name: string }) => {
     setFolderTrail((prev) => {
@@ -223,6 +225,11 @@ export function App() {
             pageSize={pageSize}
             onPageSizeChange={(size) => {
               setPageSize(size);
+              setPage(1);
+            }}
+            typeFilter={typeFilter}
+            setTypeFilter={(tf) => {
+              setTypeFilter(tf);
               setPage(1);
             }}
             folderTrail={folderTrail}

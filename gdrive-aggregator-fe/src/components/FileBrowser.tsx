@@ -31,7 +31,7 @@ import {
   Mail,
 } from 'lucide-react';
 import { apiService } from '../services/api';
-import { ImagePreviewModal } from './ImagePreviewModal';
+import { FilePreviewModal } from './FilePreviewModal';
 import { FileDetailModal } from './FileDetailModal';
 
 interface FileBrowserProps {
@@ -45,6 +45,8 @@ interface FileBrowserProps {
   setSearchQuery: (query: string) => void;
   filterAccountId: number;
   setFilterAccountId: (id: number) => void;
+  typeFilter: 'all' | 'folders' | 'docs' | 'media' | 'archives' | 'code';
+  setTypeFilter: (type: 'all' | 'folders' | 'docs' | 'media' | 'archives' | 'code') => void;
   page: number;
   onPageChange: (page: number) => void;
   pageSize: number;
@@ -66,6 +68,8 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
   setSearchQuery,
   filterAccountId,
   setFilterAccountId,
+  typeFilter,
+  setTypeFilter,
   page,
   onPageChange,
   pageSize,
@@ -80,7 +84,6 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
   const [isSyncing, setIsSyncing] = useState(false);
   const [isSyncingFolder, setIsSyncingFolder] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [typeFilter, setTypeFilter] = useState<'all' | 'folders' | 'docs' | 'media' | 'archives' | 'code'>('all');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [previewFile, setPreviewFile] = useState<FileRecord | null>(null);
   const [detailFile, setDetailFile] = useState<FileRecord | null>(null);
@@ -290,17 +293,62 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
     }
   };
 
+  const isDocFile = (name: string, mime: string): boolean => {
+    const ext = name.split('.').pop()?.toLowerCase() || '';
+    return (
+      ['pdf', 'doc', 'docx', 'txt', 'md', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'rtf', 'odt', 'ods', 'odp'].includes(ext) ||
+      mime.includes('pdf') ||
+      mime.includes('document') ||
+      mime.includes('text') ||
+      mime.includes('sheet') ||
+      mime.includes('presentation')
+    );
+  };
+
+  const isMediaFile = (name: string, mime: string): boolean => {
+    const ext = name.split('.').pop()?.toLowerCase() || '';
+    return (
+      ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico', 'mp4', 'mkv', 'webm', 'mov', 'avi', 'mp3', 'wav', 'ogg', 'm4a', 'flac'].includes(ext) ||
+      mime.startsWith('image/') ||
+      mime.startsWith('video/') ||
+      mime.startsWith('audio/')
+    );
+  };
+
+  const isArchiveFile = (name: string, mime: string): boolean => {
+    const ext = name.split('.').pop()?.toLowerCase() || '';
+    return (
+      ['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz', 'iso', 'tgz', 'tbz2'].includes(ext) ||
+      mime.includes('zip') ||
+      mime.includes('compressed') ||
+      mime.includes('archive') ||
+      mime.includes('tar') ||
+      mime.includes('rar') ||
+      mime.includes('7z')
+    );
+  };
+
+  const isCodeFile = (name: string, mime: string): boolean => {
+    const ext = name.split('.').pop()?.toLowerCase() || '';
+    return (
+      ['js', 'ts', 'jsx', 'tsx', 'go', 'py', 'json', 'html', 'css', 'sql', 'sh', 'yaml', 'yml', 'xml', 'env', 'conf'].includes(ext) ||
+      mime.includes('javascript') ||
+      mime.includes('json') ||
+      mime.includes('xml')
+    );
+  };
+
   // Filter by file type
   const filteredFiles = files.filter((f) => {
     const isFolder = isFolderItem(f);
     if (typeFilter === 'all') return true;
     if (typeFilter === 'folders') return isFolder;
     if (isFolder) return false; // Other filters only apply to files
-    const ext = f.name.split('.').pop()?.toLowerCase() || '';
-    if (typeFilter === 'docs') return ['pdf', 'doc', 'docx', 'txt', 'md', 'xls', 'xlsx'].includes(ext);
-    if (typeFilter === 'media') return ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'mp4', 'mkv', 'webm', 'mov', 'mp3', 'wav'].includes(ext);
-    if (typeFilter === 'archives') return ['zip', 'rar', '7z', 'tar', 'gz'].includes(ext);
-    if (typeFilter === 'code') return ['js', 'ts', 'jsx', 'tsx', 'go', 'py', 'json', 'html', 'css', 'sql', 'sh'].includes(ext);
+    const mime = f.mime_type || '';
+    if (typeFilter === 'docs') return isDocFile(f.name, mime);
+    if (typeFilter === 'media') return isMediaFile(f.name, mime);
+    if (typeFilter === 'archives') return isArchiveFile(f.name, mime);
+    if (typeFilter === 'code') return isCodeFile(f.name, mime);
     return true;
   });
 
@@ -544,9 +592,9 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 
       {/* Main Content: Table View vs Grid View */}
       {viewMode === 'list' ? (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs font-mono">
-            <thead className="bg-zinc-950 text-zinc-300 font-black border-b-2 border-zinc-700 uppercase tracking-wider text-[11px]">
+        <div className="overflow-x-auto overflow-y-auto max-h-[58vh] min-h-[360px] relative scrollbar-thin">
+          <table className="w-full text-left text-xs font-mono border-collapse">
+            <thead className="bg-zinc-950 text-zinc-300 font-black border-b-2 border-zinc-700 uppercase tracking-wider text-[11px] sticky top-0 z-10 shadow-[0_2px_0px_0px_#000]">
               <tr>
                 {/* Select All Checkbox */}
                 <th className="py-3 px-3 w-8 text-center">
@@ -684,14 +732,12 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                             <span
                               onClick={() => {
                                 if (isFolder) handleOpenFolder({ id: f.drive_file_id, name: f.name });
-                                else if (isImg) setPreviewFile(f);
+                                else setPreviewFile(f);
                               }}
                               className={`truncate max-w-xs sm:max-w-md ${
                                 isFolder
                                   ? 'text-amber-300 font-bold cursor-pointer hover:underline'
-                                  : isImg
-                                  ? 'text-cyan-300 font-medium cursor-pointer hover:underline'
-                                  : 'text-zinc-200 font-medium'
+                                  : 'text-cyan-300 font-medium cursor-pointer hover:underline'
                               }`}
                               title={f.name}
                             >
@@ -749,11 +795,11 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                             </button>
                           ) : (
                             <>
-                              {isImg && (
+                              {!isFolder && (
                                 <button
                                   onClick={() => setPreviewFile(f)}
                                   className="p-1.5 text-zinc-300 hover:text-black hover:bg-cyan-400 rounded border border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_#000] transition-all"
-                                  title="Pratinjau gambar"
+                                  title="Pratinjau file"
                                 >
                                   <Eye className="w-3.5 h-3.5 stroke-[2.5]" />
                                 </button>
@@ -798,48 +844,49 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
               <p className="text-xs font-bold text-zinc-400 uppercase font-mono">Tidak ada file atau folder yang ditemukan</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5">
-              {filteredFiles.map((f) => {
-                const isFolder = isFolderItem(f);
-                const isImg = !isFolder && isImageFile(f.name, f.mime_type);
-                const isSelected = selectedIds.has(f.id);
+            <div className="overflow-y-auto max-h-[58vh] min-h-[360px] scrollbar-thin p-1">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5">
+                {filteredFiles.map((f) => {
+                  const isFolder = isFolderItem(f);
+                  const isImg = !isFolder && isImageFile(f.name, f.mime_type);
+                  const isSelected = selectedIds.has(f.id);
 
-                return (
-                  <div
-                    key={f.id}
-                    className={`bg-zinc-950 border-2 rounded-lg overflow-hidden group transition-all flex flex-col relative ${
-                      isSelected
-                        ? 'border-cyan-400 bg-cyan-950/20 shadow-[4px_4px_0px_0px_#06b6d4]'
-                        : 'border-zinc-700 hover:border-cyan-400 shadow-[3px_3px_0px_0px_#000] hover:shadow-[5px_5px_0px_0px_#000] hover:-translate-y-0.5'
-                    }`}
-                  >
-                    {/* Checkbox Overlay */}
-                    <div className="absolute top-2 left-2 z-10">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleSelect(f.id);
-                        }}
-                        className="bg-black/80 border border-zinc-700 p-1 rounded hover:bg-black transition shadow-[1.5px_1.5px_0px_0px_#000]"
-                      >
-                        {isSelected ? (
-                          <CheckSquare className="w-3.5 h-3.5 text-cyan-400 stroke-[2.5]" />
-                        ) : (
-                          <Square className="w-3.5 h-3.5 text-zinc-400 stroke-[2]" />
-                        )}
-                      </button>
-                    </div>
-
-                    {/* Media / Folder Thumbnail Container */}
+                  return (
                     <div
-                      onClick={() => {
-                        if (isFolder) handleOpenFolder({ id: f.drive_file_id, name: f.name });
-                        else if (isImg) setPreviewFile(f);
-                      }}
-                      className={`relative h-32 flex items-center justify-center overflow-hidden cursor-pointer border-b-2 border-zinc-750 ${
-                        isFolder ? 'bg-amber-400/10 hover:bg-amber-400/20' : 'bg-zinc-900'
+                      key={f.id}
+                      className={`bg-zinc-950 border-2 rounded-lg overflow-hidden group transition-all flex flex-col relative ${
+                        isSelected
+                          ? 'border-cyan-400 bg-cyan-950/20 shadow-[4px_4px_0px_0px_#06b6d4]'
+                          : 'border-zinc-700 hover:border-cyan-400 shadow-[3px_3px_0px_0px_#000] hover:shadow-[5px_5px_0px_0px_#000] hover:-translate-y-0.5'
                       }`}
                     >
+                      {/* Checkbox Overlay */}
+                      <div className="absolute top-2 left-2 z-10">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSelect(f.id);
+                          }}
+                          className="p-1 rounded bg-zinc-950/90 border border-zinc-700 hover:border-cyan-400 text-zinc-300 transition shadow-[1px_1px_0px_0px_#000]"
+                        >
+                          {isSelected ? (
+                            <CheckSquare className="w-4 h-4 text-cyan-400 stroke-[2.5]" />
+                          ) : (
+                            <Square className="w-4 h-4 stroke-[2]" />
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Media / Folder Thumbnail Container */}
+                      <div
+                        onClick={() => {
+                          if (isFolder) handleOpenFolder({ id: f.drive_file_id, name: f.name });
+                          else setPreviewFile(f);
+                        }}
+                        className={`relative h-32 flex items-center justify-center overflow-hidden cursor-pointer border-b-2 border-zinc-750 ${
+                          isFolder ? 'bg-amber-400/10 hover:bg-amber-400/20' : 'bg-zinc-900'
+                        }`}
+                      >
                       {isFolder ? (
                         <div className="flex flex-col items-center gap-1.5">
                           <Folder className="w-10 h-10 text-amber-400 fill-amber-400/30 transition-transform group-hover:scale-110 stroke-[2]" />
@@ -875,7 +922,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                           title={f.name}
                           onClick={() => {
                             if (isFolder) handleOpenFolder({ id: f.drive_file_id, name: f.name });
-                            else if (isImg) setPreviewFile(f);
+                            else setPreviewFile(f);
                           }}
                         >
                           {f.name}
@@ -907,11 +954,11 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                             <FolderOpen className="w-3.5 h-3.5 stroke-[2.5]" />
                             <span>Buka</span>
                           </button>
-                        ) : isImg ? (
+                        ) : !isFolder ? (
                           <button
                             onClick={() => setPreviewFile(f)}
                             className="text-zinc-300 hover:text-black hover:bg-cyan-400 p-1.5 rounded border border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_#000] transition-all"
-                            title="Lihat Gambar"
+                            title="Pratinjau File"
                           >
                             <Eye className="w-3.5 h-3.5 stroke-[2.5]" />
                           </button>
@@ -950,6 +997,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                   </div>
                 );
               })}
+              </div>
             </div>
           )}
         </div>
@@ -1104,8 +1152,8 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
         </div>
       )}
 
-      {/* Image Preview Modal */}
-      <ImagePreviewModal
+      {/* Universal File Preview Modal */}
+      <FilePreviewModal
         file={previewFile}
         onClose={() => setPreviewFile(null)}
         onDownload={handleDownload}

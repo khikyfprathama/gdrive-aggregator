@@ -64,7 +64,7 @@ export const apiService = {
   },
 
   // Files
-  getFiles: async (params?: { account_id?: number; search?: string; parent_id?: string; limit?: number; offset?: number }): Promise<FilesResponse> => {
+  getFiles: async (params?: { account_id?: number; search?: string; parent_id?: string; type?: string; limit?: number; offset?: number }): Promise<FilesResponse> => {
     const res = await api.get<FilesResponse>('/api/v1/files', { params });
     return res.data;
   },
