@@ -129,6 +129,10 @@ export const apiService = {
     return `${getBaseURL()}/api/v1/files/download/${id}?inline=1`;
   },
 
+  getFileThumbnailUrl: (id: number): string => {
+    return `${getBaseURL()}/api/v1/files/thumbnail/${id}`;
+  },
+
   getFileDownloadUrl: (id: number): string => {
     return `${getBaseURL()}/api/v1/files/download/${id}`;
   },

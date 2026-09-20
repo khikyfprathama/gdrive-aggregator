@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { FileRecord } from '../types';
 import { apiService } from '../services/api';
-import { X, Download, ExternalLink, RefreshCw, AlertCircle } from 'lucide-react';
+import { X, Download, ExternalLink, RefreshCw, AlertCircle, ZoomIn } from 'lucide-react';
 
 interface ImagePreviewModalProps {
   file: FileRecord | null;
@@ -16,10 +16,13 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
 }) => {
   const [loading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  // Start with thumbnail URL; user can click to switch to full quality
+  const [showFull, setShowFull] = useState(false);
 
   useEffect(() => {
     setLoading(true);
     setHasError(false);
+    setShowFull(false);
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -33,7 +36,12 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
 
   if (!file) return null;
 
-  const previewUrl = apiService.getFilePreviewUrl(file.id);
+  // Fast thumbnail URL (redirect ke CDN Google Drive — ringan & cepat)
+  const thumbnailUrl = apiService.getFileThumbnailUrl(file.id);
+  // Full-res URL hanya dimuat jika user klik tombol "Kualitas Penuh"
+  const fullUrl = apiService.getFilePreviewUrl(file.id);
+
+  const activeUrl = showFull ? fullUrl : thumbnailUrl;
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 B';
@@ -58,15 +66,34 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
             <span className="text-[11px] text-zinc-400 font-mono">
               ({formatFileSize(file.size)})
             </span>
+            {/* Quality badge */}
+            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${
+              showFull
+                ? 'bg-emerald-950/50 border-emerald-700/50 text-emerald-400'
+                : 'bg-blue-950/50 border-blue-700/50 text-blue-400'
+            }`}>
+              {showFull ? 'Penuh' : 'Pratinjau'}
+            </span>
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
+            {/* Toggle full quality button */}
+            {!showFull && (
+              <button
+                onClick={() => { setShowFull(true); setLoading(true); setHasError(false); }}
+                className="flex items-center gap-1 px-2 py-1 text-[11px] text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 rounded-lg transition border border-zinc-700"
+                title="Muat gambar kualitas penuh (lebih lambat)"
+              >
+                <ZoomIn className="w-3.5 h-3.5" />
+                <span>Kualitas Penuh</span>
+              </button>
+            )}
             <a
-              href={previewUrl}
+              href={fullUrl}
               target="_blank"
               rel="noreferrer"
               className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition"
-              title="Open full image in new tab"
+              title="Buka gambar penuh di tab baru"
             >
               <ExternalLink className="w-4 h-4" />
             </a>
@@ -80,7 +107,7 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
             <button
               onClick={onClose}
               className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition"
-              title="Close preview (Esc)"
+              title="Tutup pratinjau (Esc)"
             >
               <X className="w-4 h-4" />
             </button>
@@ -92,7 +119,9 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
           {loading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-zinc-400">
               <RefreshCw className="w-6 h-6 animate-spin text-blue-400" />
-              <span className="text-xs">Memuat pratinjau gambar...</span>
+              <span className="text-xs">
+                {showFull ? 'Memuat kualitas penuh...' : 'Memuat pratinjau...'}
+              </span>
             </div>
           )}
 
@@ -101,7 +130,7 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
               <AlertCircle className="w-8 h-8" />
               <p className="text-xs font-semibold">Gagal memuat pratinjau gambar</p>
               <p className="text-[11px] text-zinc-500 max-w-xs">
-                File mungkin tidak mendukung streaming langsung atau terjadi masalah jaringan.
+                File mungkin tidak mendukung pratinjau langsung atau terjadi masalah jaringan.
               </p>
               <button
                 onClick={() => onDownload(file)}
@@ -112,12 +141,19 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
             </div>
           ) : (
             <img
-              src={previewUrl}
+              key={activeUrl}
+              src={activeUrl}
               alt={file.name}
               onLoad={() => setLoading(false)}
               onError={() => {
                 setLoading(false);
-                setHasError(true);
+                if (!showFull) {
+                  // Thumbnail failed, auto-fallback to full
+                  setShowFull(true);
+                  setLoading(true);
+                } else {
+                  setHasError(true);
+                }
               }}
               className={`max-h-[68vh] max-w-full object-contain rounded transition-opacity duration-200 ${
                 loading ? 'opacity-0' : 'opacity-100'
@@ -134,8 +170,15 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
               {file.account_email || '-'}
             </span>
           </div>
-          <div className="font-mono text-zinc-500">
-            Mime: {file.mime_type || 'image'}
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-zinc-500">
+              Mime: {file.mime_type || 'image'}
+            </span>
+            {!showFull && (
+              <span className="text-blue-500/70 italic">
+                ⚡ Pratinjau cepat aktif
+              </span>
+            )}
           </div>
         </div>
       </div>

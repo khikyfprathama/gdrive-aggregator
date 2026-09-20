@@ -136,7 +136,7 @@ func (s *driveService) UploadFile(ctx context.Context, account *model.Account, f
 	// Create file in Drive using media upload stream
 	createdFile, err := srv.Files.Create(driveFile).
 		Media(fileReader).
-		Fields("id, name, mimeType, size, md5Checksum, webViewLink, iconLink").
+		Fields("id, name, mimeType, size, md5Checksum, webViewLink, iconLink, thumbnailLink").
 		Context(ctx).
 		Do()
 	if err != nil {
@@ -144,17 +144,18 @@ func (s *driveService) UploadFile(ctx context.Context, account *model.Account, f
 	}
 
 	fileRecord := &model.FileRecord{
-		AccountID:    account.ID,
-		AccountEmail: account.Email,
-		DriveFileID:  createdFile.Id,
-		Name:         createdFile.Name,
-		MimeType:     createdFile.MimeType,
-		Size:         createdFile.Size,
-		MD5Checksum:  createdFile.Md5Checksum,
-		WebViewLink:  createdFile.WebViewLink,
-		IconLink:     createdFile.IconLink,
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+		AccountID:     account.ID,
+		AccountEmail:  account.Email,
+		DriveFileID:   createdFile.Id,
+		Name:          createdFile.Name,
+		MimeType:      createdFile.MimeType,
+		Size:          createdFile.Size,
+		MD5Checksum:   createdFile.Md5Checksum,
+		WebViewLink:   createdFile.WebViewLink,
+		IconLink:      createdFile.IconLink,
+		ThumbnailLink: createdFile.ThumbnailLink,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
 	}
 
 	if err := s.fileRepo.Create(fileRecord); err != nil {
@@ -220,7 +221,7 @@ func (s *driveService) SyncAccountFiles(ctx context.Context, account *model.Acco
 		call := srv.Files.List().
 			PageSize(100).
 			Q("trashed = false").
-			Fields("nextPageToken, files(id, name, mimeType, size, md5Checksum, webViewLink, iconLink, createdTime, parents)")
+			Fields("nextPageToken, files(id, name, mimeType, size, md5Checksum, webViewLink, iconLink, thumbnailLink, createdTime, parents)")
 
 		if pageToken != "" {
 			call = call.PageToken(pageToken)
@@ -246,19 +247,20 @@ func (s *driveService) SyncAccountFiles(ctx context.Context, account *model.Acco
 			}
 
 			record := &model.FileRecord{
-				AccountID:    account.ID,
-				AccountEmail: account.Email,
-				DriveFileID:  f.Id,
-				Name:         f.Name,
-				MimeType:     f.MimeType,
-				Size:         f.Size,
-				MD5Checksum:  f.Md5Checksum,
-				WebViewLink:  f.WebViewLink,
-				IconLink:     f.IconLink,
-				IsFolder:     isFolder,
-				ParentID:     parentID,
-				CreatedAt:    createdAt,
-				UpdatedAt:    time.Now(),
+				AccountID:     account.ID,
+				AccountEmail:  account.Email,
+				DriveFileID:   f.Id,
+				Name:          f.Name,
+				MimeType:      f.MimeType,
+				Size:          f.Size,
+				MD5Checksum:   f.Md5Checksum,
+				WebViewLink:   f.WebViewLink,
+				IconLink:      f.IconLink,
+				ThumbnailLink: f.ThumbnailLink,
+				IsFolder:      isFolder,
+				ParentID:      parentID,
+				CreatedAt:     createdAt,
+				UpdatedAt:     time.Now(),
 			}
 
 			if err := s.fileRepo.Upsert(record); err == nil {

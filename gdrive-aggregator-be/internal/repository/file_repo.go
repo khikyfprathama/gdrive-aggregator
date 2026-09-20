@@ -14,6 +14,7 @@ type FileRepository interface {
 	FindByIDs(ids []uint) ([]model.FileRecord, error)
 	FindByDriveFileID(driveFileID string) (*model.FileRecord, error)
 	FindAll(accountID uint, search string, parentID string, limit, offset int) ([]model.FileRecord, int64, error)
+	UpdateThumbnailLink(id uint, thumbnailLink string) error
 	Delete(id uint) error
 	DeleteBatch(ids []uint) error
 	DeleteByDriveFileID(driveFileID string) error
@@ -39,15 +40,16 @@ func (r *fileRepository) Upsert(file *model.FileRecord) error {
 	} else if err != nil {
 		return err
 	}
-	existing.AccountEmail = file.AccountEmail
-	existing.Name = file.Name
-	existing.MimeType = file.MimeType
-	existing.Size = file.Size
-	existing.MD5Checksum = file.MD5Checksum
-	existing.WebViewLink = file.WebViewLink
-	existing.IconLink = file.IconLink
-	existing.IsFolder = file.IsFolder
-	existing.ParentID = file.ParentID
+	existing.AccountEmail  = file.AccountEmail
+	existing.Name          = file.Name
+	existing.MimeType      = file.MimeType
+	existing.Size          = file.Size
+	existing.MD5Checksum   = file.MD5Checksum
+	existing.WebViewLink   = file.WebViewLink
+	existing.IconLink      = file.IconLink
+	existing.ThumbnailLink = file.ThumbnailLink
+	existing.IsFolder      = file.IsFolder
+	existing.ParentID      = file.ParentID
 	return r.db.Save(&existing).Error
 }
 
@@ -125,6 +127,10 @@ func (r *fileRepository) FindAll(accountID uint, search string, parentID string,
 
 func (r *fileRepository) Delete(id uint) error {
 	return r.db.Delete(&model.FileRecord{}, id).Error
+}
+
+func (r *fileRepository) UpdateThumbnailLink(id uint, thumbnailLink string) error {
+	return r.db.Model(&model.FileRecord{}).Where("id = ?", id).Update("thumbnail_link", thumbnailLink).Error
 }
 
 func (r *fileRepository) DeleteBatch(ids []uint) error {

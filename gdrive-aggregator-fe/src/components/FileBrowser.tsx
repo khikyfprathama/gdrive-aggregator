@@ -597,7 +597,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                               title="Klik untuk pratinjau gambar"
                             >
                               <img
-                                src={apiService.getFilePreviewUrl(f.id)}
+                                src={apiService.getFileThumbnailUrl(f.id)}
                                 alt={f.name}
                                 className="w-full h-full object-cover transition duration-150 group-hover/thumb:scale-110"
                                 loading="lazy"
@@ -783,7 +783,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                       ) : isImg ? (
                         <>
                           <img
-                            src={apiService.getFilePreviewUrl(f.id)}
+                            src={apiService.getFileThumbnailUrl(f.id)}
                             alt={f.name}
                             className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
                             loading="lazy"

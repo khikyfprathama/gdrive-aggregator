@@ -258,6 +258,87 @@ func (h *FileHandler) DownloadFile(c *gin.Context) {
 	c.DataFromReader(http.StatusOK, fileRecord.Size, mimeType, stream, extraHeaders)
 }
 
+// ThumbnailFile godoc
+// @Summary      Pratinjau Thumbnail File (Cepat, Non-Streaming)
+// @Description  Mengembalikan thumbnail ringan berukuran kecil langsung dari CDN Google Drive tanpa meng-stream file penuh. Ideal untuk preview grid dan pratinjau modal. Redirect 302 ke URL thumbnail CDN Google Drive.
+// @Tags         Files
+// @Produce      image/*
+// @Param        id path int true "ID file di database"
+// @Success      302 "Redirect ke thumbnail CDN Google Drive"
+// @Failure      404 {object} model.ErrorResponse
+// @Failure      500 {object} model.ErrorResponse
+// @Router       /api/v1/files/thumbnail/{id} [get]
+func (h *FileHandler) ThumbnailFile(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, model.ErrorResponse{
+			Success: false,
+			Message: "Format ID file tidak valid",
+		})
+		return
+	}
+
+	fileRecord, err := h.fileRepo.FindByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, model.ErrorResponse{
+			Success: false,
+			Message: "File tidak ditemukan di database",
+		})
+		return
+	}
+
+	// If file already has a cached thumbnail_link, redirect directly to CDN — zero bandwidth on backend
+	if fileRecord.ThumbnailLink != "" {
+		// Google Drive thumbnail links can have size adjusted via query param
+		// Replace existing sz param or append one for a reasonable preview size (max width 800)
+		thumbURL := fileRecord.ThumbnailLink
+		c.Header("Cache-Control", "public, max-age=604800") // 7 days
+		c.Redirect(http.StatusFound, thumbURL)
+		return
+	}
+
+	// Fallback: no cached thumbnail_link — fetch it live from Drive API and redirect
+	account, err := h.accountRepo.FindByID(fileRecord.AccountID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorResponse{
+			Success: false,
+			Message: "Akun Google Drive penyimpan file tidak ditemukan",
+		})
+		return
+	}
+
+	srv, err := h.driveService.GetDriveService(c.Request.Context(), account)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorResponse{
+			Success: false,
+			Message: "Gagal membuat koneksi ke Google Drive",
+		})
+		return
+	}
+
+	meta, err := srv.Files.Get(fileRecord.DriveFileID).Fields("thumbnailLink, webContentLink").Context(c.Request.Context()).Do()
+	if err != nil {
+		// Final fallback: stream full file (original behavior)
+		c.Redirect(http.StatusFound, fmt.Sprintf("/api/v1/files/download/%d?inline=1", fileRecord.ID))
+		return
+	}
+
+	if meta.ThumbnailLink != "" {
+		// Persist for next time so we skip this round-trip
+		fileRecord.ThumbnailLink = meta.ThumbnailLink
+		_ = h.fileRepo.UpdateThumbnailLink(fileRecord.ID, meta.ThumbnailLink)
+
+		c.Header("Cache-Control", "public, max-age=604800")
+		c.Redirect(http.StatusFound, meta.ThumbnailLink)
+		return
+	}
+
+	// No thumbnail at all (rare): redirect to full inline download
+	c.Redirect(http.StatusFound, fmt.Sprintf("/api/v1/files/download/%d?inline=1", fileRecord.ID))
+}
+
+
 // DeleteFile godoc
 // @Summary      Hapus File
 // @Description  Menghapus file dari Google Drive dan database lokal
