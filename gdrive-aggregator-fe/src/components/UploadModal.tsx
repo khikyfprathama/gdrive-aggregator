@@ -72,20 +72,20 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-lg shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="bg-zinc-900 border-2 border-zinc-750 rounded-xl w-full max-w-lg shadow-[8px_8px_0px_0px_#000] overflow-hidden font-mono">
         {/* Modal Header */}
-        <div className="px-5 py-4 border-b border-zinc-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <UploadCloud className="w-5 h-5 text-blue-400" />
-            <h3 className="text-sm font-semibold text-white">Upload to Google Drive</h3>
+        <div className="px-5 py-4 border-b-2 border-zinc-700 bg-zinc-950 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-white">
+            <UploadCloud className="w-5 h-5 text-cyan-400 stroke-[2.5]" />
+            <h3 className="text-xs font-black uppercase tracking-wider">Unggah ke Google Drive</h3>
           </div>
           <button
             onClick={handleClose}
             disabled={isUploading}
-            className="text-zinc-400 hover:text-zinc-200 p-1 rounded-lg transition disabled:opacity-50"
+            className="text-zinc-400 hover:text-white p-1 rounded-lg border-2 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800 transition disabled:opacity-50 shadow-[2px_2px_0px_0px_#000]"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 stroke-[2.5]" />
           </button>
         </div>
 
@@ -93,29 +93,32 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         <div className="p-5 space-y-4">
           {/* Target Account Selection */}
           <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1.5">
-              Destination Drive
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">
+              Tujuan Akun Drive
             </label>
             <select
               value={accountId}
               onChange={(e) => setAccountId(Number(e.target.value))}
               disabled={isUploading}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-zinc-700"
+              className="w-full bg-zinc-950 border-2 border-zinc-700 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-cyan-400 shadow-[2px_2px_0px_0px_#000] cursor-pointer"
             >
-              <option value={0}>Auto-Routing (Account with most free space)</option>
-              {accounts.map((acc) => (
-                <option key={acc.id} value={acc.id}>
-                  {acc.email} ({acc.free_storage_str || 'Free space'} available)
-                </option>
-              ))}
+              <option value={0}>Auto-Routing (Akun dengan sisa ruang terbanyak)</option>
+              {accounts.map((acc) => {
+                const freeBytes = acc.storage_limit > acc.storage_usage ? acc.storage_limit - acc.storage_usage : 0;
+                return (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.email} ({formatBytes(freeBytes)} tersedia)
+                  </option>
+                );
+              })}
             </select>
           </div>
 
           {/* File Selector / Drop Area */}
           <div
             onClick={() => !isUploading && fileInputRef.current?.click()}
-            className={`border border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer transition ${
-              file ? 'border-zinc-700 bg-zinc-950/60' : 'border-zinc-800 hover:border-zinc-700 bg-zinc-950/30'
+            className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer transition shadow-[2px_2px_0px_0px_#000] ${
+              file ? 'border-cyan-400 bg-cyan-950/20' : 'border-zinc-700 hover:border-cyan-400 bg-zinc-950'
             }`}
           >
             <input
@@ -127,16 +130,16 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 
             {file ? (
               <div className="space-y-1">
-                <p className="text-sm font-medium text-white truncate max-w-sm">{file.name}</p>
-                <p className="text-xs font-mono text-zinc-400">{formatBytes(file.size)}</p>
-                <p className="text-[11px] text-blue-400 pt-1">Click to select a different file</p>
+                <p className="text-sm font-bold text-white truncate max-w-sm">{file.name}</p>
+                <p className="text-xs font-mono text-cyan-400 font-bold">{formatBytes(file.size)}</p>
+                <p className="text-[11px] text-zinc-400 pt-1 font-sans">Klik untuk mengganti file</p>
               </div>
             ) : (
               <div className="space-y-1">
-                <p className="text-xs font-medium text-zinc-200">
-                  Select a file from your computer or drop here
+                <p className="text-xs font-bold text-zinc-200 uppercase tracking-wide">
+                  Pilih file dari komputer atau seret ke sini
                 </p>
-                <p className="text-[11px] text-zinc-500">Any file type accepted (binary stream upload)</p>
+                <p className="text-[11px] text-zinc-400 font-sans">Semua format file didukung</p>
               </div>
             )}
           </div>
@@ -144,13 +147,13 @@ export const UploadModal: React.FC<UploadModalProps> = ({
           {/* Upload Progress Bar */}
           {isUploading && (
             <div className="space-y-1.5 pt-2">
-              <div className="flex justify-between text-xs font-mono text-zinc-400">
-                <span>Uploading...</span>
-                <span>{progress}%</span>
+              <div className="flex justify-between text-xs font-mono text-zinc-300 font-bold uppercase">
+                <span>Mengunggah file...</span>
+                <span className="text-cyan-400">{progress}%</span>
               </div>
-              <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="w-full h-3 bg-zinc-950 border-2 border-zinc-700 rounded-md overflow-hidden p-0.5 shadow-[1px_1px_0px_0px_#000]">
                 <div
-                  className="h-full bg-blue-500 transition-all duration-150 rounded-full"
+                  className="h-full bg-cyan-400 transition-all duration-150 rounded-sm"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -159,22 +162,22 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-5 py-3.5 bg-zinc-950/50 border-t border-zinc-800 flex justify-end gap-2">
+        <div className="px-5 py-3.5 bg-zinc-950 border-t-2 border-zinc-700 flex justify-end gap-2 font-mono">
           <button
             type="button"
             onClick={handleClose}
             disabled={isUploading}
-            className="px-3.5 py-1.5 text-xs font-medium text-zinc-400 hover:text-white rounded-lg transition"
+            className="px-3.5 py-1.5 text-xs font-bold text-zinc-400 hover:text-white transition"
           >
-            Cancel
+            Batal
           </button>
           <button
             type="button"
             onClick={handleStartUpload}
             disabled={!file || isUploading}
-            className="px-4 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition disabled:opacity-50 disabled:pointer-events-none"
+            className="px-4 py-1.5 text-xs font-black uppercase tracking-wider bg-cyan-400 hover:bg-cyan-300 text-black border-2 border-black rounded shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50 disabled:pointer-events-none"
           >
-            {isUploading ? 'Uploading...' : 'Start Upload'}
+            {isUploading ? 'Mengunggah...' : 'Mulai Unggah'}
           </button>
         </div>
       </div>

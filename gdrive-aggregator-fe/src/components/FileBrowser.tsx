@@ -332,14 +332,14 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`bg-zinc-900 border rounded-xl overflow-hidden shadow-sm transition-all duration-150 relative ${
-        isDragOver ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-zinc-800'
+      className={`bg-zinc-900 border-2 border-zinc-700 rounded-xl overflow-hidden shadow-[5px_5px_0px_0px_#000000] transition-all duration-150 relative ${
+        isDragOver ? 'border-cyan-400 ring-2 ring-cyan-400/40' : ''
       }`}
     >
-      {/* Top Controls Toolbar */}
-      <div className="p-4 border-b border-zinc-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      {/* Top Controls Toolbar Neo-Brutalist */}
+      <div className="p-4 border-b-2 border-zinc-700 bg-zinc-950 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         {/* Left: Search & Type Filters */}
-        <div className="flex flex-wrap items-center gap-2 flex-1">
+        <div className="flex flex-wrap items-center gap-2.5 flex-1">
           {/* Search Box */}
           <div className="relative flex-1 min-w-[200px] max-w-xs">
             <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -348,12 +348,12 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
               placeholder="Cari file atau folder..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-8 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+              className="w-full bg-zinc-900 border-2 border-zinc-700 rounded-lg pl-9 pr-8 py-1.5 text-xs font-mono text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 shadow-[2px_2px_0px_0px_#000] transition-all"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition"
                 title="Hapus pencarian"
               >
                 <X className="w-3.5 h-3.5" />
@@ -361,14 +361,16 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             )}
           </div>
 
-          {/* Quick Type Filter Pills */}
-          <div className="inline-flex bg-zinc-950 border border-zinc-800 rounded-lg p-0.5 text-xs">
+          {/* Quick Type Filter Pills Neo-Brutalist */}
+          <div className="inline-flex bg-zinc-900 border-2 border-zinc-700 rounded-lg p-1 text-xs gap-1 shadow-[2px_2px_0px_0px_#000]">
             {(['all', 'folders', 'docs', 'media', 'archives', 'code'] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTypeFilter(t)}
-                className={`px-2.5 py-1 rounded-md capitalize font-medium transition ${
-                  typeFilter === t ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-200'
+                className={`px-2.5 py-1 rounded font-black uppercase text-[10px] tracking-wider transition ${
+                  typeFilter === t
+                    ? 'bg-cyan-400 text-black border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000]'
+                    : 'text-zinc-400 hover:text-zinc-200 border-2 border-transparent'
                 }`}
               >
                 {t}
@@ -379,16 +381,16 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 
         {/* Right: Drive Filter, View Mode, Sync, and Upload */}
         <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <div className="flex items-center gap-1.5 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs">
-            <Filter className="w-3.5 h-3.5 text-zinc-400" />
+          <div className="flex items-center gap-1.5 bg-zinc-900 border-2 border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs shadow-[2px_2px_0px_0px_#000]">
+            <Filter className="w-3.5 h-3.5 text-cyan-400" />
             <select
               value={filterAccountId}
               onChange={(e) => setFilterAccountId(Number(e.target.value))}
-              className="bg-transparent text-xs text-zinc-300 focus:outline-none pr-1"
+              className="bg-transparent text-xs font-mono font-bold text-zinc-200 focus:outline-none pr-1"
             >
-              <option value={0} className="bg-zinc-900">Semua Akun ({accounts.length})</option>
+              <option value={0} className="bg-zinc-900 text-white">Semua Akun ({accounts.length})</option>
               {accounts.map((acc) => (
-                <option key={acc.id} value={acc.id} className="bg-zinc-900">
+                <option key={acc.id} value={acc.id} className="bg-zinc-900 text-white">
                   {acc.email}
                 </option>
               ))}
@@ -396,90 +398,94 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
           </div>
 
           {/* View Mode Switcher */}
-          <div className="inline-flex bg-zinc-950 border border-zinc-800 rounded-lg p-0.5 text-xs">
+          <div className="inline-flex bg-zinc-900 border-2 border-zinc-700 rounded-lg p-0.5 text-xs shadow-[2px_2px_0px_0px_#000]">
             <button
               onClick={() => setViewMode('list')}
-              className={`p-1.5 rounded-md transition ${
-                viewMode === 'list' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-zinc-200'
+              className={`p-1.5 rounded transition ${
+                viewMode === 'list' ? 'bg-cyan-400 text-black border border-black shadow-[1px_1px_0px_0px_#000]' : 'text-zinc-400 hover:text-zinc-200'
               }`}
               title="Tampilan Tabel"
             >
-              <LayoutList className="w-3.5 h-3.5" />
+              <LayoutList className="w-3.5 h-3.5 stroke-[2.5]" />
             </button>
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded-md transition ${
-                viewMode === 'grid' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-zinc-200'
+              className={`p-1.5 rounded transition ${
+                viewMode === 'grid' ? 'bg-cyan-400 text-black border border-black shadow-[1px_1px_0px_0px_#000]' : 'text-zinc-400 hover:text-zinc-200'
               }`}
               title="Tampilan Galeri / Grid"
             >
-              <LayoutGrid className="w-3.5 h-3.5" />
+              <LayoutGrid className="w-3.5 h-3.5 stroke-[2.5]" />
             </button>
           </div>
 
           <button
             onClick={handleSyncFiles}
             disabled={isSyncing || loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs font-medium transition border border-zinc-750"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-750 text-zinc-200 rounded-lg text-xs font-black uppercase tracking-wider transition border-2 border-zinc-700 shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50"
             title="Scan & sinkronisasi semua file dan folder dari Google Drive"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-blue-400' : 'text-zinc-400'}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-cyan-400' : 'text-zinc-400'}`} />
             <span>{isSyncing ? 'Syncing...' : 'Sync dari Drive'}</span>
           </button>
 
           <button
             onClick={onRefresh}
             disabled={loading || isSyncing}
-            className="p-2 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
+            className="p-2 bg-zinc-800 hover:bg-zinc-750 text-zinc-300 hover:text-white border-2 border-zinc-700 rounded-lg shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition disabled:opacity-50"
             title="Muat ulang data"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-blue-400' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-cyan-400' : ''}`} />
           </button>
 
           <button
             onClick={() => onOpenUpload()}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition shadow-sm"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-cyan-400 hover:bg-cyan-300 text-black rounded-lg text-xs font-black uppercase tracking-wider transition border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
           >
-            <UploadCloud className="w-3.5 h-3.5" />
+            <UploadCloud className="w-4 h-4 stroke-[3]" />
             <span>Upload</span>
           </button>
         </div>
       </div>
 
-      {/* Breadcrumbs Navigation Bar */}
-      <div className="px-4 py-2.5 bg-zinc-950/60 border-b border-zinc-800 flex items-center justify-between gap-3 text-xs">
+      {/* Breadcrumbs Navigation Bar Neo-Brutalist */}
+      <div className="px-4 py-2.5 bg-zinc-950/90 border-b-2 border-zinc-700 flex items-center justify-between gap-3 text-xs font-mono">
         <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
           <button
             onClick={() => onNavigateBreadcrumb(-1)}
-            className={`flex items-center gap-1.5 px-2 py-1 rounded transition hover:bg-zinc-800 ${
-              folderTrail.length === 0 ? 'text-white font-semibold bg-zinc-800/60' : 'text-zinc-400'
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition border-2 ${
+              folderTrail.length === 0
+                ? 'text-black font-black bg-cyan-400 border-black shadow-[2px_2px_0px_0px_#000]'
+                : 'text-zinc-300 bg-zinc-900 border-zinc-750 hover:border-zinc-600 shadow-[1.5px_1.5px_0px_0px_#000]'
             }`}
           >
-            <HardDrive className="w-3.5 h-3.5 text-blue-400" />
+            <HardDrive className="w-3.5 h-3.5" />
             <span>Root / Semua</span>
           </button>
 
           {folderTrail.map((folder, idx) => (
             <React.Fragment key={folder.id}>
-              <ChevronRight className="w-3.5 h-3.5 text-zinc-600 shrink-0" />
+              <ChevronRight className="w-3.5 h-3.5 text-zinc-500 shrink-0 stroke-[2.5]" />
               <button
                 onClick={() => onNavigateBreadcrumb(idx)}
-                className={`flex items-center gap-1 px-2 py-1 rounded transition hover:bg-zinc-800 truncate max-w-[160px] ${
-                  idx === folderTrail.length - 1 ? 'text-white font-semibold bg-zinc-800/60' : 'text-zinc-400'
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition truncate max-w-[170px] border-2 ${
+                  idx === folderTrail.length - 1
+                    ? 'text-black font-black bg-amber-400 border-black shadow-[2px_2px_0px_0px_#000]'
+                    : 'text-zinc-300 bg-zinc-900 border-zinc-750 hover:border-zinc-600 shadow-[1.5px_1.5px_0px_0px_#000]'
                 }`}
                 title={folder.name}
               >
-                <FolderOpen className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <FolderOpen className="w-3.5 h-3.5 shrink-0 stroke-[2.5]" />
                 <span className="truncate">{folder.name}</span>
               </button>
             </React.Fragment>
           ))}
         </div>
 
-        {/* Folder Quick Actions & Up one level */}
+        {/* Folder Quick Actions & Up one level Neo-Brutalist */}
         {folderTrail.length > 0 && (
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[11px] text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-full font-mono">
+            <span className="text-[11px] text-zinc-300 bg-zinc-900 border-2 border-zinc-700 px-2.5 py-0.5 rounded font-mono font-bold shadow-[1.5px_1.5px_0px_0px_#000]">
               {totalFiles} item
             </span>
 
@@ -487,10 +493,10 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             <button
               onClick={handleSyncCurrentFolder}
               disabled={isSyncingFolder || loading}
-              className="flex items-center gap-1 px-2 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 rounded text-[11px] font-medium transition"
+              className="flex items-center gap-1 px-2.5 py-1 bg-emerald-400 hover:bg-emerald-300 text-black border-2 border-black rounded text-[11px] font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50"
               title="Pindai ulang seluruh file di folder ini dari Google Drive (termasuk file bersama/shared)"
             >
-              <RefreshCw className={`w-3 h-3 ${isSyncingFolder ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3 h-3 stroke-[2.5] ${isSyncingFolder ? 'animate-spin' : ''}`} />
               <span>{isSyncingFolder ? 'Memindai...' : 'Sync Isi Folder'}</span>
             </button>
 
@@ -498,10 +504,10 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             {totalFiles > pageSize && pageSize !== -1 && (
               <button
                 onClick={() => onPageSizeChange(-1)}
-                className="flex items-center gap-1 px-2 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 rounded text-[11px] font-medium transition"
+                className="flex items-center gap-1 px-2.5 py-1 bg-cyan-400 hover:bg-cyan-300 text-black border-2 border-black rounded text-[11px] font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
                 title="Tampilkan seluruh file dalam folder ini sekaligus"
               >
-                <Eye className="w-3 h-3" />
+                <Eye className="w-3 h-3 stroke-[2.5]" />
                 <span>Muat Semua ({totalFiles})</span>
               </button>
             )}
@@ -509,7 +515,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             {pageSize === -1 && totalFiles > 20 && (
               <button
                 onClick={() => onPageSizeChange(20)}
-                className="flex items-center gap-1 px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded text-[11px] transition"
+                className="flex items-center gap-1 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-750 text-zinc-200 border-2 border-zinc-700 rounded text-[11px] font-bold shadow-[2px_2px_0px_0px_#000] transition"
                 title="Bagi menjadi 20 file per halaman"
               >
                 <span>Bagi 20/hlm</span>
@@ -518,10 +524,10 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 
             <button
               onClick={() => onNavigateBreadcrumb(folderTrail.length - 2)}
-              className="flex items-center gap-1 px-2 py-1 bg-zinc-800/60 hover:bg-zinc-800 text-zinc-300 rounded text-[11px] transition"
+              className="flex items-center gap-1 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-750 text-zinc-200 border-2 border-zinc-700 rounded text-[11px] font-bold shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
               title="Kembali ke folder sebelumnya"
             >
-              <CornerLeftUp className="w-3 h-3 text-zinc-400" />
+              <CornerLeftUp className="w-3 h-3 stroke-[2.5]" />
               <span>Naik Level</span>
             </button>
           </div>
@@ -539,11 +545,11 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
       {/* Main Content: Table View vs Grid View */}
       {viewMode === 'list' ? (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-zinc-950/60 text-zinc-400 font-semibold border-b border-zinc-800 uppercase tracking-wider text-[11px]">
+          <table className="w-full text-left text-xs font-mono">
+            <thead className="bg-zinc-950 text-zinc-300 font-black border-b-2 border-zinc-700 uppercase tracking-wider text-[11px]">
               <tr>
                 {/* Select All Checkbox */}
-                <th className="py-2.5 px-3 w-8 text-center">
+                <th className="py-3 px-3 w-8 text-center">
                   <button
                     onClick={toggleSelectAll}
                     disabled={loading || filteredFiles.length === 0}
@@ -551,56 +557,56 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                     title={allVisibleSelected ? 'Batalkan pilihan semua' : 'Pilih semua di halaman ini'}
                   >
                     {allVisibleSelected ? (
-                      <CheckSquare className="w-4 h-4 text-blue-500" />
+                      <CheckSquare className="w-4 h-4 text-cyan-400 stroke-[2.5]" />
                     ) : someVisibleSelected ? (
-                      <MinusSquare className="w-4 h-4 text-blue-400" />
+                      <MinusSquare className="w-4 h-4 text-cyan-400 stroke-[2.5]" />
                     ) : (
-                      <Square className="w-4 h-4" />
+                      <Square className="w-4 h-4 text-zinc-500 hover:text-zinc-300 stroke-[2]" />
                     )}
                   </button>
                 </th>
-                <th className="py-2.5 px-3 font-medium">Nama</th>
-                <th className="py-2.5 px-4 font-medium hidden sm:table-cell">Akun Penyimpan</th>
-                <th className="py-2.5 px-4 font-medium">Ukuran</th>
-                <th className="py-2.5 px-4 font-medium hidden md:table-cell">Diunggah</th>
-                <th className="py-2.5 px-4 font-medium text-right">Aksi</th>
+                <th className="py-3 px-3 font-bold">NAMA</th>
+                <th className="py-3 px-4 font-bold hidden sm:table-cell">AKUN PENYIMPAN</th>
+                <th className="py-3 px-4 font-bold">UKURAN</th>
+                <th className="py-3 px-4 font-bold hidden md:table-cell">DIUNGGAH</th>
+                <th className="py-3 px-4 font-bold text-right">AKSI</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
+            <tbody className="divide-y-2 divide-zinc-800 text-zinc-300">
               {loading ? (
                 <tr>
                   <td colSpan={6} className="py-16 text-center text-zinc-400">
-                    <div className="flex flex-col items-center gap-2">
-                      <RefreshCw className="w-5 h-5 animate-spin text-blue-400" />
-                      <span>Memuat daftar file & folder...</span>
+                    <div className="flex flex-col items-center gap-2 font-mono">
+                      <RefreshCw className="w-6 h-6 animate-spin text-cyan-400 stroke-[2.5]" />
+                      <span className="font-bold uppercase tracking-wider text-xs">Memuat daftar file & folder...</span>
                     </div>
                   </td>
                 </tr>
               ) : filteredFiles.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-14 text-center">
-                    <div className="flex flex-col items-center gap-3 max-w-md mx-auto">
-                      <div className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-400">
-                        <FileText className="w-5 h-5" />
+                    <div className="flex flex-col items-center gap-3 max-w-md mx-auto p-6 bg-zinc-950 border-2 border-zinc-700 rounded-lg shadow-[4px_4px_0px_0px_#000]">
+                      <div className="w-12 h-12 rounded-md bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center text-cyan-400 shadow-[2px_2px_0px_0px_#000]">
+                        <FileText className="w-6 h-6 stroke-[2.5]" />
                       </div>
                       <div>
-                        <p className="text-xs font-semibold text-zinc-200">Belum ada file atau folder di sini</p>
-                        <p className="text-[11px] text-zinc-400 mt-1 leading-relaxed">
-                          Jika akun Google Drive Anda memiliki folder & file sebelumnya, klik tombol <strong>Sync dari Drive</strong> di bawah untuk memindai struktur foldernya.
+                        <p className="text-sm font-black uppercase tracking-wide text-white">Belum ada file atau folder di sini</p>
+                        <p className="text-xs text-zinc-400 mt-1 font-sans leading-relaxed">
+                          Jika akun Google Drive Anda memiliki file/folder sebelumnya, klik tombol <strong>Sync dari Drive</strong> di bawah untuk memindai seluruh strukturnya.
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex flex-wrap items-center justify-center gap-2.5 mt-2">
                         <button
                           onClick={handleSyncFiles}
                           disabled={isSyncing || loading}
-                          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium transition shadow-sm"
+                          className="flex items-center gap-1.5 px-4 py-2 bg-cyan-400 hover:bg-cyan-300 text-black rounded-md text-xs font-black uppercase tracking-wider border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
                         >
-                          <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                          <span>{isSyncing ? 'Memindai Drive...' : 'Scan & Sync dari Google Drive'}</span>
+                          <RefreshCw className={`w-3.5 h-3.5 stroke-[2.5] ${isSyncing ? 'animate-spin' : ''}`} />
+                          <span>{isSyncing ? 'Memindai Drive...' : 'Scan & Sync dari Drive'}</span>
                         </button>
                         <button
                           onClick={() => onOpenUpload()}
-                          className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-xs font-medium transition border border-zinc-700/60"
+                          className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 rounded-md text-xs font-black uppercase tracking-wider border-2 border-zinc-700 shadow-[3px_3px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
                         >
                           Upload File Baru
                         </button>
@@ -617,12 +623,12 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                   return (
                     <tr
                       key={f.id}
-                      className={`transition group ${
-                        isSelected ? 'bg-blue-950/20 hover:bg-blue-900/30' : 'hover:bg-zinc-800/40'
+                      className={`transition group border-b border-zinc-800/80 ${
+                        isSelected ? 'bg-cyan-950/30 hover:bg-cyan-950/40' : 'hover:bg-zinc-800/50'
                       }`}
                     >
                       {/* Checkbox */}
-                      <td className="py-2.5 px-3 text-center">
+                      <td className="py-3 px-3 text-center">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -631,27 +637,28 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                           className="text-zinc-500 hover:text-white transition"
                         >
                           {isSelected ? (
-                            <CheckSquare className="w-4 h-4 text-blue-500" />
+                            <CheckSquare className="w-4 h-4 text-cyan-400 stroke-[2.5]" />
                           ) : (
-                            <Square className="w-4 h-4 text-zinc-600 hover:text-zinc-400" />
+                            <Square className="w-4 h-4 text-zinc-600 hover:text-zinc-400 stroke-[2]" />
                           )}
                         </button>
                       </td>
 
                       {/* File / Folder Name & Thumbnail */}
-                      <td className="py-2.5 px-3">
+                      <td className="py-3 px-3">
                         <div className="flex items-center gap-3">
                           {isFolder ? (
                             <div
                               onClick={() => handleOpenFolder({ id: f.drive_file_id, name: f.name })}
-                              className="w-8 h-8 rounded bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0 cursor-pointer hover:bg-amber-500/20 transition"
+                              className="w-8 h-8 rounded bg-amber-400 text-black border-2 border-black flex items-center justify-center shrink-0 cursor-pointer shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+                              title="Buka Folder"
                             >
-                              <Folder className="w-4 h-4 text-amber-400 fill-amber-400/30" />
+                              <Folder className="w-4 h-4 fill-black/30 stroke-[2.5]" />
                             </div>
                           ) : isImg ? (
                             <div
                               onClick={() => setPreviewFile(f)}
-                              className="relative w-8 h-8 rounded bg-zinc-950 border border-zinc-800 overflow-hidden shrink-0 cursor-pointer group/thumb hover:border-blue-500 transition"
+                              className="relative w-8 h-8 rounded bg-zinc-950 border-2 border-zinc-700 overflow-hidden shrink-0 cursor-pointer group/thumb hover:border-cyan-400 shadow-[2px_2px_0px_0px_#000] transition"
                               title="Klik untuk pratinjau gambar"
                             >
                               <img
@@ -664,34 +671,34 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                                 }}
                               />
                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition">
-                                <Eye className="w-3 h-3 text-white" />
+                                <Eye className="w-3.5 h-3.5 text-cyan-400 stroke-[2.5]" />
                               </div>
                             </div>
                           ) : (
-                            <div className="w-8 h-8 rounded bg-zinc-950 border border-zinc-800 flex items-center justify-center shrink-0">
+                            <div className="w-8 h-8 rounded bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_#000]">
                               {getFileIcon(f)}
                             </div>
                           )}
 
-                          <div className="flex items-center gap-2 truncate">
+                          <div className="flex items-center gap-2 truncate font-sans">
                             <span
                               onClick={() => {
                                 if (isFolder) handleOpenFolder({ id: f.drive_file_id, name: f.name });
                                 else if (isImg) setPreviewFile(f);
                               }}
-                              className={`font-medium truncate max-w-xs sm:max-w-md ${
+                              className={`truncate max-w-xs sm:max-w-md ${
                                 isFolder
-                                  ? 'text-white cursor-pointer hover:text-amber-300 font-semibold'
+                                  ? 'text-amber-300 font-bold cursor-pointer hover:underline'
                                   : isImg
-                                  ? 'text-white cursor-pointer hover:text-blue-400'
-                                  : 'text-zinc-200'
+                                  ? 'text-cyan-300 font-medium cursor-pointer hover:underline'
+                                  : 'text-zinc-200 font-medium'
                               }`}
                               title={f.name}
                             >
                               {f.name}
                             </span>
                             {isFolder && (
-                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
+                              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 shrink-0 uppercase">
                                 Folder
                               </span>
                             )}
@@ -700,74 +707,74 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                       </td>
 
                       {/* Target Drive Account */}
-                      <td className="py-2.5 px-4 hidden sm:table-cell">
+                      <td className="py-3 px-4 hidden sm:table-cell">
                         <button
                           onClick={() => setDetailFile(f)}
-                          className="inline-flex items-center gap-1.5 font-mono text-[11px] text-zinc-300 bg-zinc-950 hover:bg-zinc-800 hover:text-white px-2 py-0.5 rounded border border-zinc-800 transition truncate max-w-[200px]"
+                          className="inline-flex items-center gap-1.5 font-mono text-[11px] text-zinc-300 bg-zinc-900 hover:bg-zinc-800 hover:text-white px-2.5 py-1 rounded border-2 border-zinc-750 shadow-[1.5px_1.5px_0px_0px_#000] hover:border-zinc-600 transition truncate max-w-[210px]"
                           title={`Klik untuk detail akun: ${f.account_email}`}
                         >
-                          <Mail className="w-3 h-3 text-emerald-400 shrink-0" />
+                          <Mail className="w-3 h-3 text-emerald-400 shrink-0 stroke-[2.5]" />
                           <span className="truncate">{f.account_email || 'Akun Drive'}</span>
                         </button>
                       </td>
 
                       {/* Size */}
-                      <td className="py-2.5 px-4 font-mono text-[11px] text-zinc-300">
+                      <td className="py-3 px-4 font-mono font-bold text-[11px] text-zinc-300">
                         {formatFileSize(f.size, isFolder)}
                       </td>
 
                       {/* Date */}
-                      <td className="py-2.5 px-4 text-zinc-500 font-mono text-[11px] hidden md:table-cell">
+                      <td className="py-3 px-4 text-zinc-400 font-mono text-[11px] hidden md:table-cell">
                         {formatDate(f.created_at)}
                       </td>
 
                       {/* Actions */}
-                      <td className="py-2.5 px-4 text-right">
-                        <div className="inline-flex items-center gap-1 opacity-80 group-hover:opacity-100 transition">
+                      <td className="py-3 px-4 text-right">
+                        <div className="inline-flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition">
                           <button
                             onClick={() => setDetailFile(f)}
-                            className="p-1.5 text-zinc-400 hover:text-cyan-400 hover:bg-zinc-800 rounded transition"
+                            className="p-1.5 text-zinc-300 hover:text-black hover:bg-cyan-400 rounded border border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_#000] transition-all"
                             title="Detail & Akun File"
                           >
-                            <Info className="w-3.5 h-3.5" />
+                            <Info className="w-3.5 h-3.5 stroke-[2.5]" />
                           </button>
 
                           {isFolder ? (
                             <button
                               onClick={() => handleOpenFolder({ id: f.drive_file_id, name: f.name })}
-                              className="p-1.5 text-zinc-400 hover:text-amber-400 hover:bg-zinc-800 rounded transition"
+                              className="p-1.5 text-zinc-300 hover:text-black hover:bg-amber-400 rounded border border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_#000] transition-all"
                               title="Buka Folder"
                             >
-                              <FolderOpen className="w-3.5 h-3.5" />
+                              <FolderOpen className="w-3.5 h-3.5 stroke-[2.5]" />
                             </button>
                           ) : (
                             <>
                               {isImg && (
                                 <button
                                   onClick={() => setPreviewFile(f)}
-                                  className="p-1.5 text-zinc-400 hover:text-blue-400 hover:bg-zinc-800 rounded transition"
+                                  className="p-1.5 text-zinc-300 hover:text-black hover:bg-cyan-400 rounded border border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_#000] transition-all"
                                   title="Pratinjau gambar"
                                 >
-                                  <Eye className="w-3.5 h-3.5" />
+                                  <Eye className="w-3.5 h-3.5 stroke-[2.5]" />
                                 </button>
                               )}
                               <button
                                 onClick={() => handleDownload(f)}
                                 disabled={downloadingId === f.id}
-                                className="p-1.5 text-zinc-400 hover:text-emerald-400 hover:bg-zinc-800 rounded transition"
+                                className="p-1.5 text-zinc-300 hover:text-black hover:bg-emerald-400 rounded border border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_#000] transition-all disabled:opacity-50"
                                 title="Unduh file"
                               >
-                                <Download className={`w-3.5 h-3.5 ${downloadingId === f.id ? 'animate-bounce text-emerald-400' : ''}`} />
+                                <Download className={`w-3.5 h-3.5 stroke-[2.5] ${downloadingId === f.id ? 'animate-bounce text-emerald-400' : ''}`} />
                               </button>
                             </>
                           )}
                           <button
                             onClick={() => handleDelete(f)}
                             disabled={deletingId === f.id}
-                            className="p-1.5 text-zinc-400 hover:text-rose-400 hover:bg-zinc-800 rounded transition"
+                            className="p-1.5 text-zinc-300 hover:text-black hover:bg-rose-500 rounded border border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_#000] transition-all disabled:opacity-50"
                             title="Hapus"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-3.5 h-3.5 stroke-[2.5]" />
                           </button>
                         </div>
                       </td>
@@ -782,16 +789,16 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
         /* Grid / Gallery View */
         <div className="p-4">
           {loading ? (
-            <div className="py-16 text-center text-zinc-400 flex flex-col items-center gap-2">
-              <RefreshCw className="w-6 h-6 animate-spin text-blue-400" />
-              <span className="text-xs">Memuat galeri file...</span>
+            <div className="py-16 text-center text-zinc-400 flex flex-col items-center gap-2 font-mono">
+              <RefreshCw className="w-6 h-6 animate-spin text-cyan-400 stroke-[2.5]" />
+              <span className="text-xs font-bold uppercase tracking-wider">Memuat galeri file...</span>
             </div>
           ) : filteredFiles.length === 0 ? (
             <div className="py-14 text-center">
-              <p className="text-xs font-medium text-zinc-400">Tidak ada file atau folder yang ditemukan</p>
+              <p className="text-xs font-bold text-zinc-400 uppercase font-mono">Tidak ada file atau folder yang ditemukan</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5">
               {filteredFiles.map((f) => {
                 const isFolder = isFolderItem(f);
                 const isImg = !isFolder && isImageFile(f.name, f.mime_type);
@@ -800,8 +807,10 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                 return (
                   <div
                     key={f.id}
-                    className={`bg-zinc-950 border rounded-lg overflow-hidden group transition flex flex-col relative ${
-                      isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-zinc-800 hover:border-zinc-700'
+                    className={`bg-zinc-950 border-2 rounded-lg overflow-hidden group transition-all flex flex-col relative ${
+                      isSelected
+                        ? 'border-cyan-400 bg-cyan-950/20 shadow-[4px_4px_0px_0px_#06b6d4]'
+                        : 'border-zinc-700 hover:border-cyan-400 shadow-[3px_3px_0px_0px_#000] hover:shadow-[5px_5px_0px_0px_#000] hover:-translate-y-0.5'
                     }`}
                   >
                     {/* Checkbox Overlay */}
@@ -811,12 +820,12 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                           e.stopPropagation();
                           toggleSelect(f.id);
                         }}
-                        className="bg-black/60 backdrop-blur-sm p-1 rounded hover:bg-black/80 transition"
+                        className="bg-black/80 border border-zinc-700 p-1 rounded hover:bg-black transition shadow-[1.5px_1.5px_0px_0px_#000]"
                       >
                         {isSelected ? (
-                          <CheckSquare className="w-3.5 h-3.5 text-blue-500" />
+                          <CheckSquare className="w-3.5 h-3.5 text-cyan-400 stroke-[2.5]" />
                         ) : (
-                          <Square className="w-3.5 h-3.5 text-zinc-400" />
+                          <Square className="w-3.5 h-3.5 text-zinc-400 stroke-[2]" />
                         )}
                       </button>
                     </div>
@@ -827,14 +836,14 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                         if (isFolder) handleOpenFolder({ id: f.drive_file_id, name: f.name });
                         else if (isImg) setPreviewFile(f);
                       }}
-                      className={`relative h-32 flex items-center justify-center overflow-hidden cursor-pointer ${
-                        isFolder ? 'bg-amber-500/5 hover:bg-amber-500/10' : 'bg-zinc-900'
+                      className={`relative h-32 flex items-center justify-center overflow-hidden cursor-pointer border-b-2 border-zinc-750 ${
+                        isFolder ? 'bg-amber-400/10 hover:bg-amber-400/20' : 'bg-zinc-900'
                       }`}
                     >
                       {isFolder ? (
                         <div className="flex flex-col items-center gap-1.5">
-                          <Folder className="w-10 h-10 text-amber-400 fill-amber-400/20 transition-transform group-hover:scale-110" />
-                          <span className="text-[10px] font-mono text-amber-400/80 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                          <Folder className="w-10 h-10 text-amber-400 fill-amber-400/30 transition-transform group-hover:scale-110 stroke-[2]" />
+                          <span className="text-[10px] font-mono font-bold text-black bg-amber-400 px-2 py-0.5 rounded border border-black uppercase tracking-wider shadow-[1px_1px_0px_0px_#000]">
                             Folder
                           </span>
                         </div>
@@ -849,12 +858,12 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                               (e.target as HTMLElement).style.display = 'none';
                             }}
                           />
-                          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
-                            <Eye className="w-5 h-5 text-white drop-shadow" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                            <Eye className="w-6 h-6 text-cyan-400 stroke-[2.5] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
                           </div>
                         </>
                       ) : (
-                        <div className="text-zinc-500 scale-125">{getFileIcon(f)}</div>
+                        <div className="text-zinc-400 scale-125">{getFileIcon(f)}</div>
                       )}
                     </div>
 
@@ -862,7 +871,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                     <div className="p-2.5 flex-1 flex flex-col justify-between gap-2">
                       <div>
                         <p
-                          className="font-medium text-xs text-white truncate hover:text-blue-400 cursor-pointer"
+                          className="font-bold text-xs text-white truncate hover:text-cyan-300 cursor-pointer"
                           title={f.name}
                           onClick={() => {
                             if (isFolder) handleOpenFolder({ id: f.drive_file_id, name: f.name });
@@ -871,40 +880,40 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                         >
                           {f.name}
                         </p>
-                        <div className="flex items-center justify-between text-[11px] text-zinc-400 font-mono mt-1">
-                          <span>{formatFileSize(f.size, isFolder)}</span>
+                        <div className="flex items-center justify-between text-[11px] text-zinc-300 font-mono mt-1.5">
+                          <span className="font-bold">{formatFileSize(f.size, isFolder)}</span>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setDetailFile(f);
                             }}
-                            className="inline-flex items-center gap-1 text-[10px] text-zinc-300 hover:text-white bg-zinc-900 hover:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-800/80 truncate max-w-[120px] transition"
+                            className="inline-flex items-center gap-1 text-[10px] text-zinc-300 hover:text-white bg-zinc-900 hover:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-700 shadow-[1px_1px_0px_0px_#000] truncate max-w-[110px] transition"
                             title={`Akun: ${f.account_email}`}
                           >
-                            <Mail className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
+                            <Mail className="w-2.5 h-2.5 text-emerald-400 shrink-0 stroke-[2.5]" />
                             <span className="truncate">{f.account_email ? f.account_email.split('@')[0] : 'Akun'}</span>
                           </button>
                         </div>
                       </div>
 
                       {/* Card Action Buttons */}
-                      <div className="flex items-center justify-between pt-1 border-t border-zinc-800/60">
+                      <div className="flex items-center justify-between pt-1.5 border-t border-zinc-800/80">
                         {isFolder ? (
                           <button
                             onClick={() => handleOpenFolder({ id: f.drive_file_id, name: f.name })}
-                            className="text-zinc-400 hover:text-amber-400 p-1 rounded flex items-center gap-1 text-[11px]"
+                            className="text-amber-300 hover:text-black hover:bg-amber-400 px-2 py-0.5 rounded border border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_#000] flex items-center gap-1 text-[11px] font-mono font-bold transition-all"
                             title="Buka Folder"
                           >
-                            <FolderOpen className="w-3.5 h-3.5" />
+                            <FolderOpen className="w-3.5 h-3.5 stroke-[2.5]" />
                             <span>Buka</span>
                           </button>
                         ) : isImg ? (
                           <button
                             onClick={() => setPreviewFile(f)}
-                            className="text-zinc-400 hover:text-blue-400 p-1 rounded"
+                            className="text-zinc-300 hover:text-black hover:bg-cyan-400 p-1.5 rounded border border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_#000] transition-all"
                             title="Lihat Gambar"
                           >
-                            <Eye className="w-3.5 h-3.5" />
+                            <Eye className="w-3.5 h-3.5 stroke-[2.5]" />
                           </button>
                         ) : (
                           <span />
@@ -912,28 +921,28 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => setDetailFile(f)}
-                            className="text-zinc-400 hover:text-cyan-400 p-1 rounded transition"
+                            className="text-zinc-300 hover:text-black hover:bg-cyan-400 p-1.5 rounded border border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_#000] transition-all"
                             title="Detail & Akun"
                           >
-                            <Info className="w-3.5 h-3.5" />
+                            <Info className="w-3.5 h-3.5 stroke-[2.5]" />
                           </button>
                           {!isFolder && (
                             <button
                               onClick={() => handleDownload(f)}
                               disabled={downloadingId === f.id}
-                              className="text-zinc-400 hover:text-emerald-400 p-1 rounded"
+                              className="text-zinc-300 hover:text-black hover:bg-emerald-400 p-1.5 rounded border border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_#000] transition-all disabled:opacity-50"
                               title="Unduh"
                             >
-                              <Download className="w-3.5 h-3.5" />
+                              <Download className="w-3.5 h-3.5 stroke-[2.5]" />
                             </button>
                           )}
                           <button
                             onClick={() => handleDelete(f)}
                             disabled={deletingId === f.id}
-                            className="text-zinc-400 hover:text-rose-400 p-1 rounded"
+                            className="text-zinc-300 hover:text-black hover:bg-rose-500 p-1.5 rounded border border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_#000] transition-all disabled:opacity-50"
                             title="Hapus"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-3.5 h-3.5 stroke-[2.5]" />
                           </button>
                         </div>
                       </div>
@@ -946,29 +955,28 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
         </div>
       )}
 
-      {/* Footer & Pagination Controls */}
-      <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-950/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400">
+      {/* Footer & Pagination Controls Neo-Brutalist */}
+      <div className="px-4 py-3.5 border-t-2 border-zinc-700 bg-zinc-950 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-300 font-mono">
         {/* Left: Range and items per page */}
         <div className="flex items-center gap-3">
           <span>
             {isAllPages ? (
               <>
-                Menampilkan seluruh <span className="font-semibold text-emerald-400">{totalFiles}</span> file/folder
+                Total <span className="font-black text-emerald-400">{totalFiles}</span> file/folder
               </>
             ) : (
               <>
-                Menampilkan <span className="font-medium text-white">{startItem}-{endItem}</span> dari{' '}
-                <span className="font-medium text-white">{totalFiles}</span> file/folder
+                Item <span className="font-bold text-cyan-400">{startItem}-{endItem}</span> / <span className="font-bold text-white">{totalFiles}</span>
               </>
             )}
           </span>
 
-          <div className="flex items-center gap-1.5 pl-3 border-l border-zinc-800">
-            <span className="text-[11px] text-zinc-500">Per halaman:</span>
+          <div className="flex items-center gap-1.5 pl-3 border-l-2 border-zinc-700">
+            <span className="text-[11px] text-zinc-400 font-bold uppercase">Per hlm:</span>
             <select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:border-zinc-700"
+              className="bg-zinc-900 border-2 border-zinc-700 rounded px-2 py-0.5 text-xs font-bold text-zinc-100 shadow-[2px_2px_0px_0px_#000] focus:outline-none focus:border-cyan-400 cursor-pointer"
             >
               {[10, 20, 50, 100, 250, 500].map((size) => (
                 <option key={size} value={size}>
@@ -983,13 +991,13 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
         {/* Right: Pagination buttons or All Items Status */}
         {isAllPages ? (
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-zinc-500 italic">
-              Seluruh item ditampilkan tanpa pembagian halaman
+            <span className="text-[11px] text-zinc-400 italic">
+              Semua item ditampilkan
             </span>
             {totalFiles > 20 && (
               <button
                 onClick={() => onPageSizeChange(20)}
-                className="px-2.5 py-1 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded text-xs text-zinc-300 transition"
+                className="px-3 py-1 bg-zinc-900 border-2 border-zinc-700 hover:bg-zinc-800 rounded text-xs font-bold text-zinc-200 shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
                 title="Bagi menjadi 20 item per halaman"
               >
                 Bagi 20/hlm
@@ -1001,7 +1009,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             <button
               onClick={() => onPageChange(1)}
               disabled={page === 1 || loading}
-              className="px-2 py-1 bg-zinc-900 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+              className="px-2.5 py-1 bg-zinc-900 border-2 border-zinc-700 rounded text-xs font-bold text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
               title="Halaman Pertama"
             >
               &laquo;
@@ -1009,7 +1017,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             <button
               onClick={() => onPageChange(page - 1)}
               disabled={page === 1 || loading}
-              className="px-2.5 py-1 bg-zinc-900 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+              className="px-3 py-1 bg-zinc-900 border-2 border-zinc-700 rounded text-xs font-bold text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
               title="Halaman Sebelumnya"
             >
               &lsaquo; Prev
@@ -1022,16 +1030,16 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                     key={idx}
                     onClick={() => onPageChange(p)}
                     disabled={loading}
-                    className={`w-7 h-7 rounded text-xs font-medium transition ${
+                    className={`w-7 h-7 rounded text-xs font-black transition-all ${
                       page === p
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'
+                        ? 'bg-cyan-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]'
+                        : 'bg-zinc-900 border-2 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none'
                     }`}
                   >
                     {p}
                   </button>
                 ) : (
-                  <span key={idx} className="px-1 text-zinc-600">
+                  <span key={idx} className="px-1 text-zinc-500 font-bold">
                     ...
                   </span>
                 )
@@ -1041,7 +1049,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             <button
               onClick={() => onPageChange(page + 1)}
               disabled={page === totalPages || loading}
-              className="px-2.5 py-1 bg-zinc-900 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+              className="px-3 py-1 bg-zinc-900 border-2 border-zinc-700 rounded text-xs font-bold text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
               title="Halaman Selanjutnya"
             >
               Next &rsaquo;
@@ -1049,7 +1057,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             <button
               onClick={() => onPageChange(totalPages)}
               disabled={page === totalPages || loading}
-              className="px-2 py-1 bg-zinc-900 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+              className="px-2.5 py-1 bg-zinc-900 border-2 border-zinc-700 rounded text-xs font-bold text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
               title="Halaman Terakhir"
             >
               &raquo;
@@ -1058,40 +1066,40 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
         )}
       </div>
 
-      {/* Floating Multi-Select Batch Action Bar */}
+      {/* Floating Multi-Select Batch Action Bar Neo-Brutalist */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-900/95 border border-zinc-700 shadow-2xl backdrop-blur-md rounded-xl px-4 py-2.5 flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
-          <div className="flex items-center gap-2 pr-3 border-r border-zinc-800">
-            <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[11px]">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-900 border-2 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl px-4 py-2.5 flex items-center gap-3 text-xs font-mono animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div className="flex items-center gap-2 pr-3 border-r-2 border-zinc-750">
+            <span className="w-5 h-5 rounded bg-cyan-400 text-black border border-black flex items-center justify-center font-black text-[11px] shadow-[1px_1px_0px_0px_#000]">
               {selectedIds.size}
             </span>
-            <span className="text-zinc-200 font-medium">dipilih</span>
+            <span className="text-zinc-200 font-bold uppercase tracking-wider">dipilih</span>
           </div>
 
           <button
             onClick={handleBatchDownload}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-lg transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-400 hover:bg-emerald-300 text-black border-2 border-black rounded-lg font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
             title="Unduh file yang dipilih"
           >
-            <Download className="w-3.5 h-3.5 text-emerald-400" />
+            <Download className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Unduh ({selectedIds.size})</span>
           </button>
 
           <button
             onClick={handleBatchDelete}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 rounded-lg transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-400 text-white border-2 border-black rounded-lg font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
             title="Hapus permanen file/folder yang dipilih"
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Hapus ({selectedIds.size})</span>
           </button>
 
           <button
             onClick={() => setSelectedIds(new Set())}
-            className="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition"
+            className="p-1.5 text-zinc-300 hover:text-white rounded-lg bg-zinc-800 hover:bg-zinc-700 border-2 border-zinc-700 shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
             title="Batalkan Pilihan"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3.5 h-3.5 stroke-[2.5]" />
           </button>
         </div>
       )}

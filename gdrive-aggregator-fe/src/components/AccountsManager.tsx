@@ -17,31 +17,39 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
   const [syncingId, setSyncingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
+  const formatBytes = (bytes: number): string => {
+    if (!bytes || bytes <= 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   const handleSync = async (account: Account) => {
     try {
       setSyncingId(account.id);
       await apiService.syncAccount(account.id);
-      onShowToast(`Synced storage quota for ${account.email}`, 'success');
+      onShowToast(`Berhasil menyinkronkan kuota ${account.email}`, 'success');
       onAccountUpdated();
     } catch (err: any) {
-      onShowToast(`Failed to sync ${account.email}: ${err.message}`, 'error');
+      onShowToast(`Gagal sync ${account.email}: ${err.message}`, 'error');
     } finally {
       setSyncingId(null);
     }
   };
 
   const handleDelete = async (account: Account) => {
-    if (!window.confirm(`Disconnect drive account ${account.email}?`)) {
+    if (!window.confirm(`Putuskan integrasi Google Drive akun "${account.email}"?`)) {
       return;
     }
 
     try {
       setDeletingId(account.id);
       await apiService.deleteAccount(account.id);
-      onShowToast(`Disconnected ${account.email}`, 'success');
+      onShowToast(`Akun ${account.email} berhasil diputus.`, 'success');
       onAccountUpdated();
     } catch (err: any) {
-      onShowToast(`Error: ${err.message}`, 'error');
+      onShowToast(`Gagal memutus akun: ${err.message}`, 'error');
     } finally {
       setDeletingId(null);
     }
@@ -52,125 +60,153 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
       const authUrl = await apiService.getGoogleAuthURL();
       window.open(authUrl, '_blank');
     } catch (err: any) {
-      onShowToast(`Could not generate OAuth link: ${err.message}`, 'error');
+      onShowToast(`Tidak dapat membuka otorisasi Google: ${err.message}`, 'error');
     }
   };
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-sm space-y-0">
-      {/* Header Toolbar */}
-      <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+    <div className="bg-zinc-900 border-2 border-zinc-700 rounded-xl overflow-hidden shadow-[5px_5px_0px_0px_#000000] space-y-0">
+      {/* Header Toolbar Neo-Brutalist */}
+      <div className="p-4 sm:p-5 border-b-2 border-zinc-700 bg-zinc-950 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-            <HardDrive className="w-4 h-4 text-zinc-400" />
-            Connected Google Drives ({accounts.length})
-          </h3>
-          <p className="text-[11px] text-zinc-500 mt-0.5">
-            Individual Google accounts contributing to your unified storage pool.
+          <div className="flex items-center gap-2">
+            <span className="p-1.5 bg-cyan-400 text-black rounded border border-black shadow-[2px_2px_0px_0px_#000]">
+              <HardDrive className="w-4 h-4 stroke-[2.5]" />
+            </span>
+            <h3 className="text-sm font-black tracking-wide uppercase text-white">
+              Connected Google Drives ({accounts.length})
+            </h3>
+          </div>
+          <p className="text-xs text-zinc-400 font-mono mt-1">
+            Akun Google yang digabungkan ke dalam satu Storage Pool terpusat.
           </p>
         </div>
 
         <button
           onClick={handleAddAccount}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/60 rounded-lg text-xs font-medium transition"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-cyan-400 hover:bg-cyan-300 text-black border-2 border-black rounded-lg text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-4 h-4 stroke-[3]" />
           <span>Connect Drive</span>
         </button>
       </div>
 
-      {/* Accounts Table */}
+      {/* Accounts Table Neo-Brutalist */}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
-          <thead className="bg-zinc-950/60 text-zinc-400 font-semibold border-b border-zinc-800 uppercase tracking-wider text-[11px]">
+          <thead className="bg-zinc-950 text-zinc-400 font-mono font-bold border-b-2 border-zinc-700 uppercase tracking-wider text-[11px]">
             <tr>
-              <th className="py-2.5 px-4 font-medium">Account</th>
-              <th className="py-2.5 px-4 font-medium">Capacity</th>
-              <th className="py-2.5 px-4 font-medium">Used</th>
-              <th className="py-2.5 px-4 font-medium">Available</th>
-              <th className="py-2.5 px-4 font-medium">Allocation</th>
-              <th className="py-2.5 px-4 font-medium text-right">Actions</th>
+              <th className="py-3 px-4">Account</th>
+              <th className="py-3 px-4">Capacity</th>
+              <th className="py-3 px-4">Used</th>
+              <th className="py-3 px-4">Available</th>
+              <th className="py-3 px-4">Usage Meter</th>
+              <th className="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
+          <tbody className="divide-y-2 divide-zinc-800 text-zinc-300">
             {accounts.map((acc) => {
+              const capacity = acc.storage_limit || 0;
+              const used = acc.storage_usage || 0;
+              const available = Math.max(0, capacity - used);
               const usagePct =
                 acc.usage_percent ??
-                (acc.storage_limit > 0 ? (acc.storage_usage / acc.storage_limit) * 100 : 0);
+                (capacity > 0 ? (used / capacity) * 100 : 0);
+
+              const isHigh = usagePct > 85;
+              const isMid = usagePct > 60;
 
               return (
-                <tr key={acc.id} className="hover:bg-zinc-800/40 transition">
+                <tr key={acc.id} className="hover:bg-zinc-800/60 transition group">
                   {/* Account Info */}
-                  <td className="py-3 px-4">
+                  <td className="py-3.5 px-4">
                     <div className="flex items-center gap-3">
                       {acc.avatar_url ? (
                         <img
                           src={acc.avatar_url}
                           alt={acc.display_name}
-                          className="w-8 h-8 rounded-full object-cover ring-1 ring-zinc-700"
+                          className="w-9 h-9 rounded-lg object-cover border-2 border-zinc-600 shadow-[2px_2px_0px_0px_#000]"
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
+                        <div className="w-9 h-9 rounded-lg bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center text-zinc-300 shadow-[2px_2px_0px_0px_#000]">
                           <User className="w-4 h-4" />
                         </div>
                       )}
                       <div>
-                        <p className="font-semibold text-white text-xs">{acc.display_name || 'Google Account'}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-bold text-white text-xs tracking-tight">{acc.display_name || 'Google Account'}</p>
+                          <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-emerald-400/10 text-emerald-400 border border-emerald-500/30">
+                            Active
+                          </span>
+                        </div>
                         <p className="text-[11px] font-mono text-zinc-400">{acc.email}</p>
                       </div>
                     </div>
                   </td>
 
                   {/* Total Limit */}
-                  <td className="py-3 px-4 font-mono text-[11px] text-white font-medium">
-                    {acc.storage_limit_str || '0 B'}
+                  <td className="py-3.5 px-4 font-mono text-xs text-white font-bold">
+                    <span className="px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-200">
+                      {formatBytes(capacity)}
+                    </span>
                   </td>
 
                   {/* Used */}
-                  <td className="py-3 px-4 font-mono text-[11px] text-zinc-400">
-                    {acc.storage_usage_str || '0 B'}
+                  <td className="py-3.5 px-4 font-mono text-xs text-zinc-300 font-semibold">
+                    {formatBytes(used)}
                   </td>
 
                   {/* Free Storage */}
-                  <td className="py-3 px-4 font-mono text-[11px] text-emerald-400 font-medium">
-                    {acc.free_storage_str || '0 B'}
+                  <td className="py-3.5 px-4 font-mono text-xs font-bold text-emerald-400">
+                    <span className="px-2 py-0.5 rounded bg-emerald-950/40 border border-emerald-500/40 text-emerald-400">
+                      {formatBytes(available)}
+                    </span>
                   </td>
 
-                  {/* Meter Bar */}
-                  <td className="py-3 px-4 w-40">
-                    <div className="space-y-1">
-                      <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                  {/* Meter Bar Neo-Brutalist */}
+                  <td className="py-3.5 px-4 w-48">
+                    <div className="space-y-1.5">
+                      <div className="w-full h-3 bg-zinc-950 border-2 border-zinc-700 rounded-sm p-0.5 overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all duration-300 ${
-                            usagePct > 80 ? 'bg-amber-500' : 'bg-emerald-500'
+                          className={`h-full transition-all duration-300 rounded-[1px] ${
+                            isHigh
+                              ? 'bg-rose-500'
+                              : isMid
+                              ? 'bg-amber-400'
+                              : 'bg-emerald-400'
                           }`}
-                          style={{ width: `${Math.min(Math.max(usagePct, 1), 100)}%` }}
+                          style={{ width: `${Math.min(Math.max(usagePct, 2), 100)}%` }}
                         />
                       </div>
-                      <span className="text-[10px] text-zinc-500 font-mono">
-                        {usagePct.toFixed(1)}% allocated
-                      </span>
+                      <div className="flex justify-between items-center text-[10px] font-mono font-bold">
+                        <span className={isHigh ? 'text-rose-400' : isMid ? 'text-amber-400' : 'text-emerald-400'}>
+                          {usagePct.toFixed(1)}% Used
+                        </span>
+                        <span className="text-zinc-500">
+                          {formatBytes(used)} / {formatBytes(capacity)}
+                        </span>
+                      </div>
                     </div>
                   </td>
 
                   {/* Actions */}
-                  <td className="py-3 px-4 text-right">
-                    <div className="inline-flex items-center gap-1">
+                  <td className="py-3.5 px-4 text-right">
+                    <div className="inline-flex items-center gap-1.5">
                       <button
                         onClick={() => handleSync(acc)}
                         disabled={syncingId === acc.id}
-                        className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition"
-                        title="Sync storage from Google API"
+                        className="p-2 text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-750 border-2 border-zinc-700 rounded-lg shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50"
+                        title="Sync kuota dari Google Drive API"
                       >
                         <RefreshCw
-                          className={`w-3.5 h-3.5 ${syncingId === acc.id ? 'animate-spin text-blue-400' : ''}`}
+                          className={`w-3.5 h-3.5 ${syncingId === acc.id ? 'animate-spin text-cyan-400' : ''}`}
                         />
                       </button>
                       <button
                         onClick={() => handleDelete(acc)}
                         disabled={deletingId === acc.id}
-                        className="p-1.5 text-zinc-400 hover:text-rose-400 hover:bg-zinc-800 rounded transition"
-                        title="Disconnect drive"
+                        className="p-2 text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border-2 border-rose-500/40 rounded-lg shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50"
+                        title="Putuskan akun drive ini"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

@@ -56,23 +56,23 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
       {/* Click outside to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
-      <div className="relative z-10 max-w-4xl w-full bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="relative z-10 max-w-4xl w-full bg-zinc-900 border-2 border-zinc-750 rounded-xl overflow-hidden shadow-[8px_8px_0px_0px_#000] flex flex-col max-h-[90vh] font-mono">
         {/* Header Bar */}
-        <div className="px-4 py-3 border-b border-zinc-800 bg-zinc-950/80 flex items-center justify-between gap-3 shrink-0">
+        <div className="px-4 py-3 border-b-2 border-zinc-700 bg-zinc-950 flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2.5 truncate">
-            <span className="font-semibold text-xs text-white truncate max-w-md" title={file.name}>
+            <span className="font-bold text-xs text-white truncate max-w-md" title={file.name}>
               {file.name}
             </span>
-            <span className="text-[11px] text-zinc-400 font-mono">
+            <span className="text-[11px] text-zinc-400 font-bold">
               ({formatFileSize(file.size)})
             </span>
             {/* Quality badge */}
-            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${
+            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border-2 ${
               showFull
-                ? 'bg-emerald-950/50 border-emerald-700/50 text-emerald-400'
-                : 'bg-blue-950/50 border-blue-700/50 text-blue-400'
+                ? 'bg-emerald-400 text-black border-black shadow-[1.5px_1.5px_0px_0px_#000]'
+                : 'bg-cyan-400 text-black border-black shadow-[1.5px_1.5px_0px_0px_#000]'
             }`}>
-              {showFull ? 'Penuh' : 'Pratinjau'}
+              {showFull ? 'Kualitas Penuh' : 'Pratinjau Cepat'}
             </span>
           </div>
 
@@ -81,10 +81,10 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
             {!showFull && (
               <button
                 onClick={() => { setShowFull(true); setLoading(true); setHasError(false); }}
-                className="flex items-center gap-1 px-2 py-1 text-[11px] text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 rounded-lg transition border border-zinc-700"
+                className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-black uppercase tracking-wider text-black bg-cyan-400 hover:bg-cyan-300 rounded border-2 border-black shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
                 title="Muat gambar kualitas penuh (lebih lambat)"
               >
-                <ZoomIn className="w-3.5 h-3.5" />
+                <ZoomIn className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Kualitas Penuh</span>
               </button>
             )}
@@ -92,34 +92,34 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
               href={fullUrl}
               target="_blank"
               rel="noreferrer"
-              className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition"
+              className="p-1.5 text-zinc-400 hover:text-white rounded border border-transparent hover:border-zinc-700 hover:bg-zinc-800 transition"
               title="Buka gambar penuh di tab baru"
             >
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="w-4 h-4 stroke-[2.5]" />
             </a>
             <button
               onClick={() => onDownload(file)}
-              className="p-1.5 text-zinc-400 hover:text-emerald-400 hover:bg-zinc-800 rounded-lg transition"
+              className="p-1.5 text-zinc-400 hover:text-emerald-400 rounded border border-transparent hover:border-zinc-700 hover:bg-zinc-800 transition"
               title="Download file"
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4 stroke-[2.5]" />
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition"
+              className="p-1.5 text-zinc-400 hover:text-white rounded border border-transparent hover:border-zinc-700 hover:bg-zinc-800 transition"
               title="Tutup pratinjau (Esc)"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4 stroke-[2.5]" />
             </button>
           </div>
         </div>
 
         {/* Image Container */}
-        <div className="relative flex-1 min-h-[250px] max-h-[70vh] bg-zinc-950/90 flex items-center justify-center p-4 overflow-hidden">
+        <div className="relative flex-1 min-h-[250px] max-h-[70vh] bg-zinc-950 flex items-center justify-center p-4 overflow-hidden border-b-2 border-zinc-700">
           {loading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-zinc-400">
-              <RefreshCw className="w-6 h-6 animate-spin text-blue-400" />
-              <span className="text-xs">
+              <RefreshCw className="w-6 h-6 animate-spin text-cyan-400 stroke-[2.5]" />
+              <span className="text-xs font-bold uppercase tracking-wider">
                 {showFull ? 'Memuat kualitas penuh...' : 'Memuat pratinjau...'}
               </span>
             </div>
@@ -127,14 +127,14 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
 
           {hasError ? (
             <div className="flex flex-col items-center justify-center gap-2 text-rose-400 p-8 text-center">
-              <AlertCircle className="w-8 h-8" />
-              <p className="text-xs font-semibold">Gagal memuat pratinjau gambar</p>
-              <p className="text-[11px] text-zinc-500 max-w-xs">
+              <AlertCircle className="w-8 h-8 stroke-[2.5]" />
+              <p className="text-xs font-black uppercase">Gagal memuat pratinjau gambar</p>
+              <p className="text-[11px] text-zinc-400 font-sans max-w-xs">
                 File mungkin tidak mendukung pratinjau langsung atau terjadi masalah jaringan.
               </p>
               <button
                 onClick={() => onDownload(file)}
-                className="mt-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs font-medium transition"
+                className="mt-2 px-3.5 py-1.5 bg-cyan-400 hover:bg-cyan-300 text-black border-2 border-black rounded text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_#000] transition-all"
               >
                 Unduh File Secara Manual
               </button>
@@ -155,7 +155,7 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
                   setHasError(true);
                 }
               }}
-              className={`max-h-[68vh] max-w-full object-contain rounded transition-opacity duration-200 ${
+              className={`max-h-[68vh] max-w-full object-contain rounded border border-zinc-800 shadow-[4px_4px_0px_0px_#000] transition-opacity duration-200 ${
                 loading ? 'opacity-0' : 'opacity-100'
               }`}
             />
@@ -163,20 +163,20 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
         </div>
 
         {/* Footer info bar */}
-        <div className="px-4 py-2 bg-zinc-950 border-t border-zinc-800 text-[11px] text-zinc-400 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div className="px-4 py-2.5 bg-zinc-950 text-[11px] text-zinc-300 flex flex-wrap items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2">
-            <span>Disimpan di Drive:</span>
-            <span className="font-mono text-zinc-300 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
+            <span className="font-bold uppercase tracking-wider text-zinc-400">Akun:</span>
+            <span className="font-mono text-cyan-300 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-700 shadow-[1px_1px_0px_0px_#000]">
               {file.account_email || '-'}
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="font-mono text-zinc-500">
-              Mime: {file.mime_type || 'image'}
+            <span className="font-mono text-zinc-400">
+              MIME: {file.mime_type || 'image'}
             </span>
             {!showFull && (
-              <span className="text-blue-500/70 italic">
-                ⚡ Pratinjau cepat aktif
+              <span className="text-cyan-400 font-bold uppercase text-[10px] tracking-wider">
+                ⚡ Pratinjau Cepat Aktif
               </span>
             )}
           </div>

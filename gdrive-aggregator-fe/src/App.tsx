@@ -109,77 +109,81 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-zinc-800 selection:text-white">
-      {/* Top Application Bar */}
-      <header className="border-b border-zinc-800 bg-zinc-900/90 backdrop-blur-sm sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-cyan-400 selection:text-black">
+      {/* Top Application Bar Neo-Brutalist */}
+      <header className="border-b-2 border-zinc-800 bg-zinc-950 sticky top-0 z-30 shadow-[0_4px_0px_0px_#000000]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-15 flex items-center justify-between">
           {/* Logo & Navigation Tabs */}
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2.5">
-              <img src="/favicon.svg" alt="GDrive Aggregator" className="w-8 h-8 rounded-lg shadow-sm" />
-              <span className="font-semibold text-sm tracking-tight text-white">Drive Aggregator</span>
+              <img src="/favicon.svg" alt="GDrive Aggregator" className="w-8 h-8 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_#000]" />
+              <span className="font-black text-sm uppercase tracking-wider text-white font-mono">Drive Aggregator</span>
             </div>
 
-            {/* Segmented Tab Switcher */}
-            <nav className="flex items-center bg-zinc-950 border border-zinc-800 rounded-lg p-0.5 text-xs">
+            {/* Segmented Tab Switcher Neo-Brutalist */}
+            <nav className="flex items-center bg-zinc-900 border-2 border-zinc-700 rounded-lg p-1 text-xs gap-1 shadow-[2px_2px_0px_0px_#000]">
               <button
                 onClick={() => setActiveTab('files')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-medium transition ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-black tracking-wide uppercase transition ${
                   activeTab === 'files'
-                    ? 'bg-zinc-800 text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200'
+                    ? 'bg-cyan-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]'
+                    : 'text-zinc-400 hover:text-zinc-200 border-2 border-transparent'
                 }`}
               >
-                <Files className="w-3.5 h-3.5" />
+                <Files className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Files</span>
                 {totalFiles > 0 && (
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-zinc-700 text-zinc-300 font-mono">
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-black border ${
+                    activeTab === 'files' ? 'bg-black text-cyan-400 border-black' : 'bg-zinc-800 text-zinc-300 border-zinc-700'
+                  }`}>
                     {totalFiles}
                   </span>
                 )}
               </button>
               <button
                 onClick={() => setActiveTab('drives')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-medium transition ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-black tracking-wide uppercase transition ${
                   activeTab === 'drives'
-                    ? 'bg-zinc-800 text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200'
+                    ? 'bg-cyan-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]'
+                    : 'text-zinc-400 hover:text-zinc-200 border-2 border-transparent'
                 }`}
               >
-                <HardDrive className="w-3.5 h-3.5" />
+                <HardDrive className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Connected Drives</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-zinc-700 text-zinc-300 font-mono">
+                <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-black border ${
+                  activeTab === 'drives' ? 'bg-black text-cyan-400 border-black' : 'bg-zinc-800 text-zinc-300 border-zinc-700'
+                }`}>
                   {accounts.length}
                 </span>
               </button>
             </nav>
           </div>
 
-          {/* Right Actions */}
-          <div className="flex items-center gap-2">
+          {/* Right Actions Neo-Brutalist */}
+          <div className="flex items-center gap-2.5">
             <button
               onClick={() => handleOpenUpload()}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg transition shadow-sm"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-black uppercase tracking-wider rounded-lg border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
             >
-              <UploadCloud className="w-3.5 h-3.5" />
+              <UploadCloud className="w-4 h-4 stroke-[3]" />
               <span>Upload</span>
             </button>
 
             <button
               onClick={fetchDashboardData}
               disabled={loading}
-              className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition"
+              className="p-2 text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-750 border-2 border-zinc-700 rounded-lg shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50"
               title="Refresh"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-blue-400' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-cyan-400' : ''}`} />
             </button>
 
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition"
+              className="p-2 text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-750 border-2 border-zinc-700 rounded-lg shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
               title="Server Settings"
             >
-              <Settings className="w-3.5 h-3.5" />
+              <Settings className="w-3.5 h-3.5 stroke-[2.5]" />
             </button>
           </div>
         </div>
