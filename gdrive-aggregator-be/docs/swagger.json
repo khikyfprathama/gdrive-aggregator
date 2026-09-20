@@ -404,6 +404,56 @@
                 }
             }
         },
+        "/api/v1/files/sync": {
+            "post": {
+                "description": "Memindai dan mengimpor file yang sudah ada di akun Google Drive ke database lokal",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Sinkronisasi/Impor File dari Google Drive",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID Akun Google Drive (opsional, jika kosong sinkronisasi semua akun)",
+                        "name": "account_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "additionalProperties": true
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/files/upload": {
             "post": {
                 "description": "Mengunggah file biner. Jika account_id tidak diisi, sistem otomatis memilih akun dengan sisa kuota terbesar (*Smart Storage Allocation*).",

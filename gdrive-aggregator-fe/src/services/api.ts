@@ -113,4 +113,10 @@ export const apiService = {
   deleteFile: async (id: number): Promise<void> => {
     await api.delete(`/api/v1/files/${id}`);
   },
+
+  syncFiles: async (accountId?: number): Promise<{ synced_files: number; accounts_processed: number }> => {
+    const params = accountId && accountId > 0 ? { account_id: accountId } : undefined;
+    const res = await api.post<BaseResponse<{ synced_files: number; accounts_processed: number }>>('/api/v1/files/sync', null, { params });
+    return res.data.data;
+  },
 };

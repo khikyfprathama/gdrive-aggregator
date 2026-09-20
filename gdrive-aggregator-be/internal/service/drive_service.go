@@ -20,6 +20,7 @@ import (
 type DriveService interface {
 	GetDriveService(ctx context.Context, account *model.Account) (*drive.Service, error)
 	SyncAccountStorage(ctx context.Context, account *model.Account) (*model.Account, error)
+	SyncAccountFiles(ctx context.Context, account *model.Account) (int, error)
 	UploadFile(ctx context.Context, account *model.Account, fileHeader *multipart.FileHeader) (*model.FileRecord, error)
 	DownloadFileStream(ctx context.Context, account *model.Account, driveFileID string) (io.ReadCloser, *drive.File, error)
 	DeleteFile(ctx context.Context, account *model.Account, driveFileID string) error
@@ -203,8 +204,68 @@ func (s *driveService) DeleteFile(ctx context.Context, account *model.Account, d
 
 	_ = s.fileRepo.DeleteByDriveFileID(driveFileID)
 
-	// Sync quota after deletion
-	_, _ = s.SyncAccountStorage(ctx, account)
-
 	return nil
 }
+
+func (s *driveService) SyncAccountFiles(ctx context.Context, account *model.Account) (int, error) {
+	srv, err := s.GetDriveService(ctx, account)
+	if err != nil {
+		return 0, err
+	}
+
+	count := 0
+	pageToken := ""
+
+	for {
+		call := srv.Files.List().
+			PageSize(100).
+			Q("trashed = false and mimeType != 'application/vnd.google-apps.folder'").
+			Fields("nextPageToken, files(id, name, mimeType, size, md5Checksum, webViewLink, iconLink, createdTime)")
+
+		if pageToken != "" {
+			call = call.PageToken(pageToken)
+		}
+
+		fileList, err := call.Context(ctx).Do()
+		if err != nil {
+			return count, fmt.Errorf("gagal mengambil daftar file dari Google Drive: %w", err)
+		}
+
+		for _, f := range fileList.Files {
+			createdAt := time.Now()
+			if f.CreatedTime != "" {
+				if t, parseErr := time.Parse(time.RFC3339, f.CreatedTime); parseErr == nil {
+					createdAt = t
+				}
+			}
+
+			record := &model.FileRecord{
+				AccountID:   account.ID,
+				DriveFileID: f.Id,
+				Name:        f.Name,
+				MimeType:    f.MimeType,
+				Size:        f.Size,
+				MD5Checksum: f.Md5Checksum,
+				WebViewLink: f.WebViewLink,
+				IconLink:    f.IconLink,
+				CreatedAt:   createdAt,
+				UpdatedAt:   time.Now(),
+			}
+
+			if err := s.fileRepo.Upsert(record); err == nil {
+				count++
+			}
+		}
+
+		if fileList.NextPageToken == "" {
+			break
+		}
+		pageToken = fileList.NextPageToken
+	}
+
+	// Update quota on account
+	_, _ = s.SyncAccountStorage(ctx, account)
+
+	return count, nil
+}
+

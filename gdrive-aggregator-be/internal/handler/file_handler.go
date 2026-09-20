@@ -294,3 +294,65 @@ func (h *FileHandler) DeleteFile(c *gin.Context) {
 		Message: fmt.Sprintf("File '%s' berhasil dihapus", fileRecord.Name),
 	})
 }
+
+// SyncFiles godoc
+// @Summary      Sinkronisasi/Impor File dari Google Drive
+// @Description  Memindai dan mengimpor file yang sudah ada di akun Google Drive ke database lokal
+// @Tags         Files
+// @Accept       json
+// @Produce      json
+// @Param        account_id query int false "ID Akun Google Drive (opsional, jika kosong sinkronisasi semua akun)"
+// @Success      200 {object} model.BaseResponse{data=map[string]interface{}}
+// @Failure      500 {object} model.ErrorResponse
+// @Router       /api/v1/files/sync [post]
+func (h *FileHandler) SyncFiles(c *gin.Context) {
+	accountIDStr := c.Query("account_id")
+
+	var accounts []*model.Account
+	if accountIDStr != "" {
+		id, err := strconv.ParseUint(accountIDStr, 10, 32)
+		if err == nil && id > 0 {
+			acc, err := h.accountRepo.FindByID(uint(id))
+			if err != nil {
+				c.JSON(http.StatusNotFound, model.ErrorResponse{
+					Success: false,
+					Message: "Akun tidak ditemukan",
+				})
+				return
+			}
+			accounts = append(accounts, acc)
+		}
+	}
+
+	if len(accounts) == 0 {
+		activeList, err := h.accountRepo.FindActive()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, model.ErrorResponse{
+				Success: false,
+				Message: fmt.Sprintf("Gagal mengambil daftar akun aktif: %v", err),
+			})
+			return
+		}
+		for i := range activeList {
+			accounts = append(accounts, &activeList[i])
+		}
+	}
+
+	totalSynced := 0
+	for _, acc := range accounts {
+		synced, err := h.driveService.SyncAccountFiles(c.Request.Context(), acc)
+		if err == nil {
+			totalSynced += synced
+		}
+	}
+
+	c.JSON(http.StatusOK, model.BaseResponse{
+		Success: true,
+		Message: fmt.Sprintf("Sinkronisasi selesai. %d file berhasil diindeks dari %d akun.", totalSynced, len(accounts)),
+		Data: gin.H{
+			"synced_files":       totalSynced,
+			"accounts_processed": len(accounts),
+		},
+	})
+}
+

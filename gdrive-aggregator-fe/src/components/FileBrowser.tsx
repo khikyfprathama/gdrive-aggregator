@@ -47,6 +47,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 }) => {
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [typeFilter, setTypeFilter] = useState<'all' | 'docs' | 'media' | 'archives' | 'code'>('all');
 
@@ -119,6 +120,20 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
       onShowToast(`Delete failed: ${err.message}`, 'error');
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleSyncFiles = async () => {
+    try {
+      setIsSyncing(true);
+      onShowToast('Memindai Google Drive dan mengimpor file...', 'success');
+      const res = await apiService.syncFiles(filterAccountId > 0 ? filterAccountId : undefined);
+      onShowToast(`Sinkronisasi selesai: ${res.synced_files} file ditemukan & diindeks.`, 'success');
+      onRefresh();
+    } catch (err: any) {
+      onShowToast(err.response?.data?.message || 'Gagal sinkronisasi file dari Google Drive', 'error');
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -211,8 +226,18 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
           </div>
 
           <button
+            onClick={handleSyncFiles}
+            disabled={isSyncing || loading}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs font-medium transition border border-zinc-750"
+            title="Scan & import existing files from Google Drive into local database"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-blue-400' : 'text-zinc-400'}`} />
+            <span>{isSyncing ? 'Syncing...' : 'Sync from Drive'}</span>
+          </button>
+
+          <button
             onClick={onRefresh}
-            disabled={loading}
+            disabled={loading || isSyncing}
             className="p-2 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
             title="Refresh files"
           >
@@ -262,14 +287,32 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             ) : filteredFiles.length === 0 ? (
               <tr>
                 <td colSpan={5} className="py-14 text-center">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-500">
+                  <div className="flex flex-col items-center gap-3 max-w-md mx-auto">
+                    <div className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-400">
                       <FileText className="w-5 h-5" />
                     </div>
-                    <p className="text-xs font-medium text-zinc-300">No files found</p>
-                    <p className="text-[11px] text-zinc-500 max-w-sm">
-                      Drag and drop any file here, or click the Upload button to store your first file across your Google Drive pool.
-                    </p>
+                    <div>
+                      <p className="text-xs font-semibold text-zinc-200">Belum ada file terdaftar di database lokal</p>
+                      <p className="text-[11px] text-zinc-400 mt-1 leading-relaxed">
+                        Jika akun Google Drive Anda sudah memiliki file sebelumnya, klik tombol <strong>Sync dari Drive</strong> di bawah untuk memindai dan mengimpor file yang ada.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <button
+                        onClick={handleSyncFiles}
+                        disabled={isSyncing || loading}
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium transition shadow-sm"
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                        <span>{isSyncing ? 'Memindai Drive...' : 'Scan & Sync dari Google Drive'}</span>
+                      </button>
+                      <button
+                        onClick={() => onOpenUpload()}
+                        className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-xs font-medium transition border border-zinc-700/60"
+                      >
+                        Upload File Baru
+                      </button>
+                    </div>
                   </div>
                 </td>
               </tr>

@@ -1,12 +1,15 @@
 package repository
 
 import (
+	"errors"
+
 	"gdrive-aggregator-be/internal/model"
 	"gorm.io/gorm"
 )
 
 type FileRepository interface {
 	Create(file *model.FileRecord) error
+	Upsert(file *model.FileRecord) error
 	FindByID(id uint) (*model.FileRecord, error)
 	FindByDriveFileID(driveFileID string) (*model.FileRecord, error)
 	FindAll(accountID uint, search string, limit, offset int) ([]model.FileRecord, int64, error)
@@ -24,6 +27,23 @@ func NewFileRepository(db *gorm.DB) *fileRepository {
 
 func (r *fileRepository) Create(file *model.FileRecord) error {
 	return r.db.Create(file).Error
+}
+
+func (r *fileRepository) Upsert(file *model.FileRecord) error {
+	var existing model.FileRecord
+	err := r.db.Where("drive_file_id = ?", file.DriveFileID).First(&existing).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return r.db.Create(file).Error
+	} else if err != nil {
+		return err
+	}
+	existing.Name = file.Name
+	existing.MimeType = file.MimeType
+	existing.Size = file.Size
+	existing.MD5Checksum = file.MD5Checksum
+	existing.WebViewLink = file.WebViewLink
+	existing.IconLink = file.IconLink
+	return r.db.Save(&existing).Error
 }
 
 func (r *fileRepository) FindByID(id uint) (*model.FileRecord, error) {

@@ -472,6 +472,38 @@ paths:
       summary: Stream Download File
       tags:
       - Files
+  /api/v1/files/sync:
+    post:
+      consumes:
+      - application/json
+      description: Memindai dan mengimpor file yang sudah ada di akun Google Drive
+        ke database lokal
+      parameters:
+      - description: ID Akun Google Drive (opsional, jika kosong sinkronisasi semua
+          akun)
+        in: query
+        name: account_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.BaseResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Sinkronisasi/Impor File dari Google Drive
+      tags:
+      - Files
   /api/v1/files/upload:
     post:
       consumes:
