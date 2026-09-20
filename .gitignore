@@ -1,5 +1,5 @@
 # Binaries and executables
-**/server
+/gdrive-aggregator-be/server
 *.exe
 *.exe~
 *.dll
