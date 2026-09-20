@@ -112,9 +112,7 @@ export function App() {
           {/* Logo & Navigation Tabs */}
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-zinc-100 text-zinc-950 flex items-center justify-center font-bold text-sm shadow-sm">
-                GD
-              </div>
+              <img src="/favicon.svg" alt="GDrive Aggregator" className="w-8 h-8 rounded-lg shadow-sm" />
               <span className="font-semibold text-sm tracking-tight text-white">Drive Aggregator</span>
             </div>
 
