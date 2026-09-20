@@ -61,8 +61,8 @@ export function App() {
         account_id: filterAccountId > 0 ? filterAccountId : undefined,
         search: searchQuery || undefined,
         parent_id: currentFolder ? currentFolder.id : undefined,
-        limit: pageSize,
-        offset: (page - 1) * pageSize,
+        limit: pageSize === -1 ? 5000 : pageSize,
+        offset: pageSize === -1 ? 0 : (page - 1) * pageSize,
       });
       setFiles(filesData.data || []);
       setTotalFiles(filesData.total || 0);

@@ -288,11 +288,13 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
   });
 
   // Pagination calculation
-  const totalPages = Math.max(1, Math.ceil(totalFiles / pageSize));
-  const startItem = totalFiles === 0 ? 0 : (page - 1) * pageSize + 1;
-  const endItem = Math.min(page * pageSize, totalFiles);
+  const isAllPages = pageSize === -1;
+  const totalPages = isAllPages ? 1 : Math.max(1, Math.ceil(totalFiles / (pageSize || 20)));
+  const startItem = totalFiles === 0 ? 0 : isAllPages ? 1 : (page - 1) * pageSize + 1;
+  const endItem = isAllPages ? totalFiles : Math.min(page * pageSize, totalFiles);
 
   const getPageNumbers = () => {
+    if (isAllPages) return [1];
     const pages: (number | string)[] = [];
     if (totalPages <= 7) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
@@ -457,16 +459,44 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
           ))}
         </div>
 
-        {/* Up one level button if in folder */}
+        {/* Folder Quick Actions & Up one level */}
         {folderTrail.length > 0 && (
-          <button
-            onClick={() => onNavigateBreadcrumb(folderTrail.length - 2)}
-            className="flex items-center gap-1 px-2 py-1 bg-zinc-800/60 hover:bg-zinc-800 text-zinc-300 rounded text-[11px] transition shrink-0"
-            title="Kembali ke folder sebelumnya"
-          >
-            <CornerLeftUp className="w-3 h-3 text-zinc-400" />
-            <span>Naik Level</span>
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-[11px] text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-full font-mono">
+              {totalFiles} item
+            </span>
+
+            {/* Quick Button: Muat Semua jika belum mode semua dan total item lebih banyak dari pageSize */}
+            {totalFiles > pageSize && pageSize !== -1 && (
+              <button
+                onClick={() => onPageSizeChange(-1)}
+                className="flex items-center gap-1 px-2 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 rounded text-[11px] font-medium transition"
+                title="Tampilkan seluruh file dalam folder ini sekaligus"
+              >
+                <Eye className="w-3 h-3" />
+                <span>Muat Semua ({totalFiles})</span>
+              </button>
+            )}
+
+            {pageSize === -1 && totalFiles > 20 && (
+              <button
+                onClick={() => onPageSizeChange(20)}
+                className="flex items-center gap-1 px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded text-[11px] transition"
+                title="Bagi menjadi 20 file per halaman"
+              >
+                <span>Bagi 20/hlm</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => onNavigateBreadcrumb(folderTrail.length - 2)}
+              className="flex items-center gap-1 px-2 py-1 bg-zinc-800/60 hover:bg-zinc-800 text-zinc-300 rounded text-[11px] transition"
+              title="Kembali ke folder sebelumnya"
+            >
+              <CornerLeftUp className="w-3 h-3 text-zinc-400" />
+              <span>Naik Level</span>
+            </button>
+          </div>
         )}
       </div>
 
@@ -893,8 +923,16 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
         {/* Left: Range and items per page */}
         <div className="flex items-center gap-3">
           <span>
-            Menampilkan <span className="font-medium text-white">{startItem}-{endItem}</span> dari{' '}
-            <span className="font-medium text-white">{totalFiles}</span> file/folder
+            {isAllPages ? (
+              <>
+                Menampilkan seluruh <span className="font-semibold text-emerald-400">{totalFiles}</span> file/folder
+              </>
+            ) : (
+              <>
+                Menampilkan <span className="font-medium text-white">{startItem}-{endItem}</span> dari{' '}
+                <span className="font-medium text-white">{totalFiles}</span> file/folder
+              </>
+            )}
           </span>
 
           <div className="flex items-center gap-1.5 pl-3 border-l border-zinc-800">
@@ -902,76 +940,94 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             <select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-xs text-zinc-200 focus:outline-none"
+              className="bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:border-zinc-700"
             >
-              {[10, 20, 50, 100].map((size) => (
+              {[10, 20, 50, 100, 250, 500].map((size) => (
                 <option key={size} value={size}>
                   {size}
                 </option>
               ))}
+              <option value={-1}>Semua ({totalFiles})</option>
             </select>
           </div>
         </div>
 
-        {/* Right: Pagination buttons */}
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => onPageChange(1)}
-            disabled={page === 1 || loading}
-            className="px-2 py-1 bg-zinc-900 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
-            title="Halaman Pertama"
-          >
-            &laquo;
-          </button>
-          <button
-            onClick={() => onPageChange(page - 1)}
-            disabled={page === 1 || loading}
-            className="px-2.5 py-1 bg-zinc-900 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
-            title="Halaman Sebelumnya"
-          >
-            &lsaquo; Prev
-          </button>
-
-          <div className="flex items-center gap-1 mx-1">
-            {getPageNumbers().map((p, idx) =>
-              typeof p === 'number' ? (
-                <button
-                  key={idx}
-                  onClick={() => onPageChange(p)}
-                  disabled={loading}
-                  className={`w-7 h-7 rounded text-xs font-medium transition ${
-                    page === p
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'
-                  }`}
-                >
-                  {p}
-                </button>
-              ) : (
-                <span key={idx} className="px-1 text-zinc-600">
-                  ...
-                </span>
-              )
+        {/* Right: Pagination buttons or All Items Status */}
+        {isAllPages ? (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-zinc-500 italic">
+              Seluruh item ditampilkan tanpa pembagian halaman
+            </span>
+            {totalFiles > 20 && (
+              <button
+                onClick={() => onPageSizeChange(20)}
+                className="px-2.5 py-1 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded text-xs text-zinc-300 transition"
+                title="Bagi menjadi 20 item per halaman"
+              >
+                Bagi 20/hlm
+              </button>
             )}
           </div>
+        ) : (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => onPageChange(1)}
+              disabled={page === 1 || loading}
+              className="px-2 py-1 bg-zinc-900 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+              title="Halaman Pertama"
+            >
+              &laquo;
+            </button>
+            <button
+              onClick={() => onPageChange(page - 1)}
+              disabled={page === 1 || loading}
+              className="px-2.5 py-1 bg-zinc-900 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+              title="Halaman Sebelumnya"
+            >
+              &lsaquo; Prev
+            </button>
 
-          <button
-            onClick={() => onPageChange(page + 1)}
-            disabled={page === totalPages || loading}
-            className="px-2.5 py-1 bg-zinc-900 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
-            title="Halaman Selanjutnya"
-          >
-            Next &rsaquo;
-          </button>
-          <button
-            onClick={() => onPageChange(totalPages)}
-            disabled={page === totalPages || loading}
-            className="px-2 py-1 bg-zinc-900 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
-            title="Halaman Terakhir"
-          >
-            &raquo;
-          </button>
-        </div>
+            <div className="flex items-center gap-1 mx-1">
+              {getPageNumbers().map((p, idx) =>
+                typeof p === 'number' ? (
+                  <button
+                    key={idx}
+                    onClick={() => onPageChange(p)}
+                    disabled={loading}
+                    className={`w-7 h-7 rounded text-xs font-medium transition ${
+                      page === p
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ) : (
+                  <span key={idx} className="px-1 text-zinc-600">
+                    ...
+                  </span>
+                )
+              )}
+            </div>
+
+            <button
+              onClick={() => onPageChange(page + 1)}
+              disabled={page === totalPages || loading}
+              className="px-2.5 py-1 bg-zinc-900 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+              title="Halaman Selanjutnya"
+            >
+              Next &rsaquo;
+            </button>
+            <button
+              onClick={() => onPageChange(totalPages)}
+              disabled={page === totalPages || loading}
+              className="px-2 py-1 bg-zinc-900 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+              title="Halaman Terakhir"
+            >
+              &raquo;
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Floating Multi-Select Batch Action Bar */}

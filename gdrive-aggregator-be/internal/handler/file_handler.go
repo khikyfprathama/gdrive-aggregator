@@ -59,7 +59,12 @@ func (h *FileHandler) ListFiles(c *gin.Context) {
 		}
 	}
 
-	limit, _ := strconv.Atoi(limitStr)
+	limit := 20
+	if limitStr == "all" || limitStr == "-1" {
+		limit = -1
+	} else if l, err := strconv.Atoi(limitStr); err == nil {
+		limit = l
+	}
 	offset, _ := strconv.Atoi(offsetStr)
 
 	files, total, err := h.fileRepo.FindAll(accountID, search, parentID, limit, offset)

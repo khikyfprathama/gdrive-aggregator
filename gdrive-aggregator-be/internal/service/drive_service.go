@@ -219,7 +219,9 @@ func (s *driveService) SyncAccountFiles(ctx context.Context, account *model.Acco
 
 	for {
 		call := srv.Files.List().
-			PageSize(100).
+			PageSize(1000).
+			SupportsAllDrives(true).
+			IncludeItemsFromAllDrives(true).
 			Q("trashed = false").
 			Fields("nextPageToken, files(id, name, mimeType, size, md5Checksum, webViewLink, iconLink, thumbnailLink, createdTime, parents)")
 

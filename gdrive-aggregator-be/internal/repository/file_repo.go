@@ -118,10 +118,14 @@ func (r *fileRepository) FindAll(accountID uint, search string, parentID string,
 		return nil, 0, err
 	}
 
-	if limit <= 0 {
-		limit = 20
+	if limit == -1 {
+		err = query.Order("file_records.is_folder desc, file_records.created_at desc").Find(&files).Error
+	} else {
+		if limit <= 0 {
+			limit = 20
+		}
+		err = query.Order("file_records.is_folder desc, file_records.created_at desc").Limit(limit).Offset(offset).Find(&files).Error
 	}
-	err = query.Order("file_records.is_folder desc, file_records.created_at desc").Limit(limit).Offset(offset).Find(&files).Error
 	return files, total, err
 }
 
