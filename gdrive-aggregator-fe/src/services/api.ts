@@ -125,6 +125,13 @@ export const apiService = {
     return res.data.data;
   },
 
+  syncFolder: async (folderId: string): Promise<{ synced_files: number; folder_id: string }> => {
+    const res = await api.post<BaseResponse<{ synced_files: number; folder_id: string }>>('/api/v1/files/sync-folder', null, {
+      params: { folder_id: folderId },
+    });
+    return res.data.data;
+  },
+
   getFilePreviewUrl: (id: number): string => {
     return `${getBaseURL()}/api/v1/files/download/${id}?inline=1`;
   },

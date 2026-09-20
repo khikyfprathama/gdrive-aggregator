@@ -449,6 +449,64 @@ func (h *FileHandler) SyncFiles(c *gin.Context) {
 	})
 }
 
+// SyncFolder godoc
+// @Summary      Sinkronisasi Isi Folder Tertentu dari Google Drive
+// @Description  Memindai seluruh isi folder spesifik dari Google Drive (termasuk shared folder dari pengguna lain)
+// @Tags         Files
+// @Accept       json
+// @Produce      json
+// @Param        folder_id query string true "Drive File ID folder yang ingin disinkronkan"
+// @Success      200 {object} model.BaseResponse{data=map[string]interface{}}
+// @Failure      400 {object} model.ErrorResponse
+// @Failure      500 {object} model.ErrorResponse
+// @Router       /api/v1/files/sync-folder [post]
+func (h *FileHandler) SyncFolder(c *gin.Context) {
+	folderID := c.Query("folder_id")
+	if folderID == "" {
+		c.JSON(http.StatusBadRequest, model.ErrorResponse{
+			Success: false,
+			Message: "folder_id wajib diisi",
+		})
+		return
+	}
+
+	folderRecord, err := h.fileRepo.FindByDriveFileID(folderID)
+	var account *model.Account
+	if err == nil && folderRecord != nil {
+		account, _ = h.accountRepo.FindByID(folderRecord.AccountID)
+	}
+
+	if account == nil {
+		activeList, err := h.accountRepo.FindActive()
+		if err != nil || len(activeList) == 0 {
+			c.JSON(http.StatusInternalServerError, model.ErrorResponse{
+				Success: false,
+				Message: "Tidak ada akun aktif yang tersedia untuk sinkronisasi folder",
+			})
+			return
+		}
+		account = &activeList[0]
+	}
+
+	synced, err := h.driveService.SyncFolderFiles(c.Request.Context(), account, folderID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorResponse{
+			Success: false,
+			Message: fmt.Sprintf("Gagal sinkronisasi folder: %v", err),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, model.BaseResponse{
+		Success: true,
+		Message: fmt.Sprintf("Berhasil menyinkronkan %d file dari folder Google Drive", synced),
+		Data: gin.H{
+			"synced_files": synced,
+			"folder_id":    folderID,
+		},
+	})
+}
+
 type BatchDeleteRequest struct {
 	IDs []uint `json:"ids" binding:"required"`
 }

@@ -78,6 +78,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isSyncingFolder, setIsSyncingFolder] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [typeFilter, setTypeFilter] = useState<'all' | 'folders' | 'docs' | 'media' | 'archives' | 'code'>('all');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -199,6 +200,22 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
       onShowToast(err.response?.data?.message || 'Gagal sinkronisasi dari Google Drive', 'error');
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  const handleSyncCurrentFolder = async () => {
+    if (folderTrail.length === 0) return;
+    const currentFolder = folderTrail[folderTrail.length - 1];
+    try {
+      setIsSyncingFolder(true);
+      onShowToast(`Memindai Google Drive untuk isi folder "${currentFolder.name}"...`, 'success');
+      const res = await apiService.syncFolder(currentFolder.id);
+      onShowToast(`Sinkronisasi folder selesai: ${res.synced_files} file berhasil disinkronkan.`, 'success');
+      onRefresh();
+    } catch (err: any) {
+      onShowToast(err.response?.data?.message || 'Gagal menyinkronkan isi folder', 'error');
+    } finally {
+      setIsSyncingFolder(false);
     }
   };
 
@@ -465,6 +482,17 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             <span className="text-[11px] text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-full font-mono">
               {totalFiles} item
             </span>
+
+            {/* Sync Isi Folder ini dari Google Drive */}
+            <button
+              onClick={handleSyncCurrentFolder}
+              disabled={isSyncingFolder || loading}
+              className="flex items-center gap-1 px-2 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 rounded text-[11px] font-medium transition"
+              title="Pindai ulang seluruh file di folder ini dari Google Drive (termasuk file bersama/shared)"
+            >
+              <RefreshCw className={`w-3 h-3 ${isSyncingFolder ? 'animate-spin' : ''}`} />
+              <span>{isSyncingFolder ? 'Memindai...' : 'Sync Isi Folder'}</span>
+            </button>
 
             {/* Quick Button: Muat Semua jika belum mode semua dan total item lebih banyak dari pageSize */}
             {totalFiles > pageSize && pageSize !== -1 && (

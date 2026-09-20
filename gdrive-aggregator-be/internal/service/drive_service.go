@@ -21,6 +21,7 @@ type DriveService interface {
 	GetDriveService(ctx context.Context, account *model.Account) (*drive.Service, error)
 	SyncAccountStorage(ctx context.Context, account *model.Account) (*model.Account, error)
 	SyncAccountFiles(ctx context.Context, account *model.Account) (int, error)
+	SyncFolderFiles(ctx context.Context, account *model.Account, folderDriveID string) (int, error)
 	UploadFile(ctx context.Context, account *model.Account, fileHeader *multipart.FileHeader) (*model.FileRecord, error)
 	DownloadFileStream(ctx context.Context, account *model.Account, driveFileID string) (io.ReadCloser, *drive.File, error)
 	DeleteFile(ctx context.Context, account *model.Account, driveFileID string) error
@@ -208,6 +209,77 @@ func (s *driveService) DeleteFile(ctx context.Context, account *model.Account, d
 	return nil
 }
 
+func (s *driveService) SyncFolderFiles(ctx context.Context, account *model.Account, folderDriveID string) (int, error) {
+	srv, err := s.GetDriveService(ctx, account)
+	if err != nil {
+		return 0, err
+	}
+
+	count := 0
+	pageToken := ""
+
+	for {
+		call := srv.Files.List().
+			PageSize(1000).
+			SupportsAllDrives(true).
+			IncludeItemsFromAllDrives(true).
+			Q(fmt.Sprintf("'%s' in parents and trashed = false", folderDriveID)).
+			Fields("nextPageToken, files(id, name, mimeType, size, md5Checksum, webViewLink, iconLink, thumbnailLink, createdTime, parents)")
+
+		if pageToken != "" {
+			call = call.PageToken(pageToken)
+		}
+
+		fileList, err := call.Context(ctx).Do()
+		if err != nil {
+			return count, fmt.Errorf("gagal mengambil isi folder dari Google Drive: %w", err)
+		}
+
+		for _, f := range fileList.Files {
+			createdAt := time.Now()
+			if f.CreatedTime != "" {
+				if t, parseErr := time.Parse(time.RFC3339, f.CreatedTime); parseErr == nil {
+					createdAt = t
+				}
+			}
+
+			isFolder := f.MimeType == "application/vnd.google-apps.folder"
+			parentID := folderDriveID
+			if len(f.Parents) > 0 {
+				parentID = f.Parents[0]
+			}
+
+			record := &model.FileRecord{
+				AccountID:     account.ID,
+				AccountEmail:  account.Email,
+				DriveFileID:   f.Id,
+				Name:          f.Name,
+				MimeType:      f.MimeType,
+				Size:          f.Size,
+				MD5Checksum:   f.Md5Checksum,
+				WebViewLink:   f.WebViewLink,
+				IconLink:      f.IconLink,
+				ThumbnailLink: f.ThumbnailLink,
+				IsFolder:      isFolder,
+				ParentID:      parentID,
+				CreatedAt:     createdAt,
+				UpdatedAt:     time.Now(),
+			}
+
+			if err := s.fileRepo.Upsert(record); err == nil {
+				count++
+			}
+		}
+
+		if fileList.NextPageToken == "" {
+			break
+		}
+		pageToken = fileList.NextPageToken
+	}
+
+	return count, nil
+}
+
 func (s *driveService) SyncAccountFiles(ctx context.Context, account *model.Account) (int, error) {
 	srv, err := s.GetDriveService(ctx, account)
 	if err != nil {
@@ -216,6 +288,7 @@ func (s *driveService) SyncAccountFiles(ctx context.Context, account *model.Acco
 
 	count := 0
 	pageToken := ""
+	var folderIDs []string
 
 	for {
 		call := srv.Files.List().
@@ -243,6 +316,10 @@ func (s *driveService) SyncAccountFiles(ctx context.Context, account *model.Acco
 			}
 
 			isFolder := f.MimeType == "application/vnd.google-apps.folder"
+			if isFolder {
+				folderIDs = append(folderIDs, f.Id)
+			}
+
 			parentID := ""
 			if len(f.Parents) > 0 {
 				parentID = f.Parents[0]
@@ -274,6 +351,12 @@ func (s *driveService) SyncAccountFiles(ctx context.Context, account *model.Acco
 			break
 		}
 		pageToken = fileList.NextPageToken
+	}
+
+	// Deep sync children files for each folder to ensure shared folder contents from others are fully indexed
+	for _, folderID := range folderIDs {
+		subCount, _ := s.SyncFolderFiles(ctx, account, folderID)
+		count += subCount
 	}
 
 	// Update quota on account

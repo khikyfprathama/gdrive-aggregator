@@ -107,6 +107,7 @@ func main() {
 			files.GET("", fileHandler.ListFiles)
 			files.POST("/upload", fileHandler.UploadFile)
 			files.POST("/sync", fileHandler.SyncFiles)
+			files.POST("/sync-folder", fileHandler.SyncFolder)
 			files.GET("/download/:id", fileHandler.DownloadFile)
 			files.GET("/thumbnail/:id", fileHandler.ThumbnailFile)
 			files.DELETE("/:id", fileHandler.DeleteFile)
