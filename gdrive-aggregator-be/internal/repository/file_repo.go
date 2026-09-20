@@ -39,6 +39,7 @@ func (r *fileRepository) Upsert(file *model.FileRecord) error {
 	} else if err != nil {
 		return err
 	}
+	existing.AccountEmail = file.AccountEmail
 	existing.Name = file.Name
 	existing.MimeType = file.MimeType
 	existing.Size = file.Size
@@ -52,7 +53,11 @@ func (r *fileRepository) Upsert(file *model.FileRecord) error {
 
 func (r *fileRepository) FindByID(id uint) (*model.FileRecord, error) {
 	var file model.FileRecord
-	err := r.db.First(&file, id).Error
+	err := r.db.Table("file_records").
+		Select("file_records.*, accounts.email as account_email").
+		Joins("left join accounts on accounts.id = file_records.account_id").
+		Where("file_records.id = ?", id).
+		First(&file).Error
 	if err != nil {
 		return nil, err
 	}
@@ -61,13 +66,21 @@ func (r *fileRepository) FindByID(id uint) (*model.FileRecord, error) {
 
 func (r *fileRepository) FindByIDs(ids []uint) ([]model.FileRecord, error) {
 	var files []model.FileRecord
-	err := r.db.Where("id IN ?", ids).Find(&files).Error
+	err := r.db.Table("file_records").
+		Select("file_records.*, accounts.email as account_email").
+		Joins("left join accounts on accounts.id = file_records.account_id").
+		Where("file_records.id IN ?", ids).
+		Find(&files).Error
 	return files, err
 }
 
 func (r *fileRepository) FindByDriveFileID(driveFileID string) (*model.FileRecord, error) {
 	var file model.FileRecord
-	err := r.db.Where("drive_file_id = ?", driveFileID).First(&file).Error
+	err := r.db.Table("file_records").
+		Select("file_records.*, accounts.email as account_email").
+		Joins("left join accounts on accounts.id = file_records.account_id").
+		Where("file_records.drive_file_id = ?", driveFileID).
+		First(&file).Error
 	if err != nil {
 		return nil, err
 	}
@@ -78,18 +91,24 @@ func (r *fileRepository) FindAll(accountID uint, search string, parentID string,
 	var files []model.FileRecord
 	var total int64
 
-	query := r.db.Model(&model.FileRecord{})
+	query := r.db.Table("file_records").
+		Select("file_records.*, accounts.email as account_email").
+		Joins("left join accounts on accounts.id = file_records.account_id")
+
 	if accountID > 0 {
-		query = query.Where("account_id = ?", accountID)
+		query = query.Where("file_records.account_id = ?", accountID)
 	}
-	if search != "" {
-		query = query.Where("name LIKE ?", "%"+search+"%")
-	} else if parentID != "" {
+
+	if parentID != "" {
 		if parentID == "root" {
-			query = query.Where("parent_id = '' OR parent_id IS NULL")
+			query = query.Where("file_records.parent_id = '' OR file_records.parent_id IS NULL")
 		} else {
-			query = query.Where("parent_id = ?", parentID)
+			query = query.Where("file_records.parent_id = ?", parentID)
 		}
+	}
+
+	if search != "" {
+		query = query.Where("file_records.name LIKE ?", "%"+search+"%")
 	}
 
 	err := query.Count(&total).Error
@@ -100,7 +119,7 @@ func (r *fileRepository) FindAll(accountID uint, search string, parentID string,
 	if limit <= 0 {
 		limit = 20
 	}
-	err = query.Order("is_folder desc, created_at desc").Limit(limit).Offset(offset).Find(&files).Error
+	err = query.Order("file_records.is_folder desc, file_records.created_at desc").Limit(limit).Offset(offset).Find(&files).Error
 	return files, total, err
 }
 

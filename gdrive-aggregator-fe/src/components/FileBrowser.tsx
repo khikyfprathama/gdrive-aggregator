@@ -144,9 +144,14 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
     });
   };
 
+  const handleOpenFolder = (folder: { id: string; name: string }) => {
+    setSearchQuery('');
+    onEnterFolder(folder);
+  };
+
   const handleDownload = async (file: FileRecord) => {
     if (isFolderItem(file)) {
-      onEnterFolder({ id: file.drive_file_id, name: file.name });
+      handleOpenFolder({ id: file.drive_file_id, name: file.name });
       return;
     }
 
@@ -320,8 +325,17 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
               placeholder="Cari file atau folder..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-8 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition"
+                title="Hapus pencarian"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           {/* Quick Type Filter Pills */}
@@ -567,7 +581,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                         <div className="flex items-center gap-3">
                           {isFolder ? (
                             <div
-                              onClick={() => onEnterFolder({ id: f.drive_file_id, name: f.name })}
+                              onClick={() => handleOpenFolder({ id: f.drive_file_id, name: f.name })}
                               className="w-8 h-8 rounded bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0 cursor-pointer hover:bg-amber-500/20 transition"
                             >
                               <Folder className="w-4 h-4 text-amber-400 fill-amber-400/30" />
@@ -600,7 +614,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                           <div className="flex items-center gap-2 truncate">
                             <span
                               onClick={() => {
-                                if (isFolder) onEnterFolder({ id: f.drive_file_id, name: f.name });
+                                if (isFolder) handleOpenFolder({ id: f.drive_file_id, name: f.name });
                                 else if (isImg) setPreviewFile(f);
                               }}
                               className={`font-medium truncate max-w-xs sm:max-w-md ${
@@ -645,7 +659,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                         <div className="inline-flex items-center gap-1 opacity-80 group-hover:opacity-100 transition">
                           {isFolder ? (
                             <button
-                              onClick={() => onEnterFolder({ id: f.drive_file_id, name: f.name })}
+                              onClick={() => handleOpenFolder({ id: f.drive_file_id, name: f.name })}
                               className="p-1.5 text-zinc-400 hover:text-amber-400 hover:bg-zinc-800 rounded transition"
                               title="Buka Folder"
                             >
@@ -735,7 +749,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                     {/* Media / Folder Thumbnail Container */}
                     <div
                       onClick={() => {
-                        if (isFolder) onEnterFolder({ id: f.drive_file_id, name: f.name });
+                        if (isFolder) handleOpenFolder({ id: f.drive_file_id, name: f.name });
                         else if (isImg) setPreviewFile(f);
                       }}
                       className={`relative h-32 flex items-center justify-center overflow-hidden cursor-pointer ${
@@ -776,7 +790,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                           className="font-medium text-xs text-white truncate hover:text-blue-400 cursor-pointer"
                           title={f.name}
                           onClick={() => {
-                            if (isFolder) onEnterFolder({ id: f.drive_file_id, name: f.name });
+                            if (isFolder) handleOpenFolder({ id: f.drive_file_id, name: f.name });
                             else if (isImg) setPreviewFile(f);
                           }}
                         >
@@ -794,7 +808,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                       <div className="flex items-center justify-between pt-1 border-t border-zinc-800/60">
                         {isFolder ? (
                           <button
-                            onClick={() => onEnterFolder({ id: f.drive_file_id, name: f.name })}
+                            onClick={() => handleOpenFolder({ id: f.drive_file_id, name: f.name })}
                             className="text-zinc-400 hover:text-amber-400 p-1 rounded flex items-center gap-1 text-[11px]"
                             title="Buka Folder"
                           >

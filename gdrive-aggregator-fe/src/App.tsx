@@ -71,7 +71,13 @@ export function App() {
   }, [filterAccountId, searchQuery, folderTrail, page, pageSize, showToast]);
 
   const handleEnterFolder = (folder: { id: string; name: string }) => {
-    setFolderTrail((prev) => [...prev, folder]);
+    setFolderTrail((prev) => {
+      if (prev.length > 0 && prev[prev.length - 1].id === folder.id) {
+        return prev;
+      }
+      return [...prev, folder];
+    });
+    setSearchQuery('');
     setPage(1);
   };
 
@@ -81,6 +87,7 @@ export function App() {
     } else {
       setFolderTrail((prev) => prev.slice(0, index + 1));
     }
+    setSearchQuery('');
     setPage(1);
   };
 

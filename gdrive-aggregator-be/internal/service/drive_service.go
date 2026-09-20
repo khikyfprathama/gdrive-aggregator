@@ -246,18 +246,19 @@ func (s *driveService) SyncAccountFiles(ctx context.Context, account *model.Acco
 			}
 
 			record := &model.FileRecord{
-				AccountID:   account.ID,
-				DriveFileID: f.Id,
-				Name:        f.Name,
-				MimeType:    f.MimeType,
-				Size:        f.Size,
-				MD5Checksum: f.Md5Checksum,
-				WebViewLink: f.WebViewLink,
-				IconLink:    f.IconLink,
-				IsFolder:    isFolder,
-				ParentID:    parentID,
-				CreatedAt:   createdAt,
-				UpdatedAt:   time.Now(),
+				AccountID:    account.ID,
+				AccountEmail: account.Email,
+				DriveFileID:  f.Id,
+				Name:         f.Name,
+				MimeType:     f.MimeType,
+				Size:         f.Size,
+				MD5Checksum:  f.Md5Checksum,
+				WebViewLink:  f.WebViewLink,
+				IconLink:     f.IconLink,
+				IsFolder:     isFolder,
+				ParentID:     parentID,
+				CreatedAt:    createdAt,
+				UpdatedAt:    time.Now(),
 			}
 
 			if err := s.fileRepo.Upsert(record); err == nil {
