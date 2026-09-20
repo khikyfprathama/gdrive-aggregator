@@ -1,4 +1,8 @@
+// Copyright (c) 2024 Garagarabug Studio. All rights reserved.
+// Licensed under the MIT License with Attribution Requirement.
+// Source: https://github.com/khikyfprathama/gdrive-aggregator
 package main
+
 
 import (
 	"fmt"

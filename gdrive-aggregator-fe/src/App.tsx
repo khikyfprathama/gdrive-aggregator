@@ -1,4 +1,8 @@
+// Copyright (c) 2024 Garagarabug Studio. All rights reserved.
+// Licensed under the MIT License with Attribution Requirement.
+// Source: https://github.com/khikyfprathama/gdrive-aggregator
 import { useState, useEffect, useCallback } from 'react';
+
 import { StorageHeader } from './components/StorageHeader';
 import { FileBrowser } from './components/FileBrowser';
 import { AccountsManager } from './components/AccountsManager';
@@ -236,9 +240,23 @@ export function App() {
 
       {/* Footer Status Line */}
       <footer className="border-t border-zinc-900 px-6 py-3 text-xs text-zinc-500 flex justify-between items-center">
-        <span>Drive Aggregator &bull; Pure Go SQLite Backend</span>
-        <span>Local Network Console</span>
+        <span className="flex items-center gap-1.5">
+          <span>Drive Aggregator</span>
+          <span className="text-zinc-700">•</span>
+          <span>Pure Go · SQLite · React</span>
+        </span>
+        <a
+          href="https://github.com/khikyfprathama"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-1 text-zinc-500 hover:text-zinc-300 transition-colors"
+          title="Garagarabug Studio — Developer"
+        >
+          <span>© {new Date().getFullYear()}</span>
+          <span className="font-semibold text-zinc-400 hover:text-white transition-colors">Garagarabug Studio</span>
+        </a>
       </footer>
+
 
       {/* Upload Modal */}
       <UploadModal
