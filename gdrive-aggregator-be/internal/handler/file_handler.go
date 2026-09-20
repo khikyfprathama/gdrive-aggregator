@@ -244,8 +244,14 @@ func (h *FileHandler) DownloadFile(c *gin.Context) {
 		mimeType = "application/octet-stream"
 	}
 
+	disposition := "attachment"
+	if c.Query("inline") == "1" || c.Query("inline") == "true" || c.Query("preview") == "1" || c.Query("preview") == "true" {
+		disposition = "inline"
+	}
+
 	extraHeaders := map[string]string{
-		"Content-Disposition": fmt.Sprintf(`attachment; filename="%s"`, fileName),
+		"Content-Disposition": fmt.Sprintf(`%s; filename="%s"`, disposition, fileName),
+		"Cache-Control":       "public, max-age=86400",
 	}
 
 	c.DataFromReader(http.StatusOK, fileRecord.Size, mimeType, stream, extraHeaders)

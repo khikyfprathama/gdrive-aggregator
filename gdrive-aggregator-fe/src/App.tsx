@@ -24,9 +24,11 @@ export function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [droppedFile, setDroppedFile] = useState<File | null>(null);
 
-  // Search & Filters
+  // Search, Filters & Pagination
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterAccountId, setFilterAccountId] = useState<number>(0);
+  const [page, setPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(20);
 
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -52,7 +54,8 @@ export function App() {
       const filesData = await apiService.getFiles({
         account_id: filterAccountId > 0 ? filterAccountId : undefined,
         search: searchQuery || undefined,
-        limit: 100,
+        limit: pageSize,
+        offset: (page - 1) * pageSize,
       });
       setFiles(filesData.data || []);
       setTotalFiles(filesData.total || 0);
@@ -62,7 +65,7 @@ export function App() {
     } finally {
       setLoading(false);
     }
-  }, [filterAccountId, searchQuery, showToast]);
+  }, [filterAccountId, searchQuery, page, pageSize, showToast]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -176,9 +179,22 @@ export function App() {
             onRefresh={fetchDashboardData}
             onShowToast={showToast}
             searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
+            setSearchQuery={(q) => {
+              setSearchQuery(q);
+              setPage(1);
+            }}
             filterAccountId={filterAccountId}
-            setFilterAccountId={setFilterAccountId}
+            setFilterAccountId={(id) => {
+              setFilterAccountId(id);
+              setPage(1);
+            }}
+            page={page}
+            onPageChange={setPage}
+            pageSize={pageSize}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setPage(1);
+            }}
             onOpenUpload={handleOpenUpload}
           />
         )}

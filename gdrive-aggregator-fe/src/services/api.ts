@@ -119,4 +119,12 @@ export const apiService = {
     const res = await api.post<BaseResponse<{ synced_files: number; accounts_processed: number }>>('/api/v1/files/sync', null, { params });
     return res.data.data;
   },
+
+  getFilePreviewUrl: (id: number): string => {
+    return `${getBaseURL()}/api/v1/files/download/${id}?inline=1`;
+  },
+
+  getFileDownloadUrl: (id: number): string => {
+    return `${getBaseURL()}/api/v1/files/download/${id}`;
+  },
 };
