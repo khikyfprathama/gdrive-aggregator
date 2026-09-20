@@ -27,9 +27,12 @@ import {
   MinusSquare,
   X,
   CornerLeftUp,
+  Info,
+  Mail,
 } from 'lucide-react';
 import { apiService } from '../services/api';
 import { ImagePreviewModal } from './ImagePreviewModal';
+import { FileDetailModal } from './FileDetailModal';
 
 interface FileBrowserProps {
   files: FileRecord[];
@@ -79,6 +82,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
   const [typeFilter, setTypeFilter] = useState<'all' | 'folders' | 'docs' | 'media' | 'archives' | 'code'>('all');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [previewFile, setPreviewFile] = useState<FileRecord | null>(null);
+  const [detailFile, setDetailFile] = useState<FileRecord | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   // Clear selection when page or folder changes
@@ -639,9 +643,14 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 
                       {/* Target Drive Account */}
                       <td className="py-2.5 px-4 hidden sm:table-cell">
-                        <span className="font-mono text-[11px] text-zinc-400 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">
-                          {f.account_email}
-                        </span>
+                        <button
+                          onClick={() => setDetailFile(f)}
+                          className="inline-flex items-center gap-1.5 font-mono text-[11px] text-zinc-300 bg-zinc-950 hover:bg-zinc-800 hover:text-white px-2 py-0.5 rounded border border-zinc-800 transition truncate max-w-[200px]"
+                          title={`Klik untuk detail akun: ${f.account_email}`}
+                        >
+                          <Mail className="w-3 h-3 text-emerald-400 shrink-0" />
+                          <span className="truncate">{f.account_email || 'Akun Drive'}</span>
+                        </button>
                       </td>
 
                       {/* Size */}
@@ -657,6 +666,14 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                       {/* Actions */}
                       <td className="py-2.5 px-4 text-right">
                         <div className="inline-flex items-center gap-1 opacity-80 group-hover:opacity-100 transition">
+                          <button
+                            onClick={() => setDetailFile(f)}
+                            className="p-1.5 text-zinc-400 hover:text-cyan-400 hover:bg-zinc-800 rounded transition"
+                            title="Detail & Akun File"
+                          >
+                            <Info className="w-3.5 h-3.5" />
+                          </button>
+
                           {isFolder ? (
                             <button
                               onClick={() => handleOpenFolder({ id: f.drive_file_id, name: f.name })}
@@ -798,9 +815,17 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                         </p>
                         <div className="flex items-center justify-between text-[11px] text-zinc-400 font-mono mt-1">
                           <span>{formatFileSize(f.size, isFolder)}</span>
-                          <span className="truncate max-w-[80px]" title={f.account_email}>
-                            {f.account_email?.split('@')[0]}
-                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDetailFile(f);
+                            }}
+                            className="inline-flex items-center gap-1 text-[10px] text-zinc-300 hover:text-white bg-zinc-900 hover:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-800/80 truncate max-w-[120px] transition"
+                            title={`Akun: ${f.account_email}`}
+                          >
+                            <Mail className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
+                            <span className="truncate">{f.account_email ? f.account_email.split('@')[0] : 'Akun'}</span>
+                          </button>
                         </div>
                       </div>
 
@@ -827,6 +852,13 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                           <span />
                         )}
                         <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => setDetailFile(f)}
+                            className="text-zinc-400 hover:text-cyan-400 p-1 rounded transition"
+                            title="Detail & Akun"
+                          >
+                            <Info className="w-3.5 h-3.5" />
+                          </button>
                           {!isFolder && (
                             <button
                               onClick={() => handleDownload(f)}
@@ -985,6 +1017,19 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
         file={previewFile}
         onClose={() => setPreviewFile(null)}
         onDownload={handleDownload}
+      />
+
+      {/* File & Folder Detail Modal */}
+      <FileDetailModal
+        file={detailFile}
+        onClose={() => setDetailFile(null)}
+        onDownload={handleDownload}
+        onDelete={handleDelete}
+        onPreview={(f) => setPreviewFile(f)}
+        onOpenFolder={(f) => {
+          setDetailFile(null);
+          handleOpenFolder(f);
+        }}
       />
     </div>
   );
