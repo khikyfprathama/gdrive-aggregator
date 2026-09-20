@@ -27,6 +27,8 @@ export interface FileRecord {
   md5_checksum?: string;
   web_view_link?: string;
   icon_link?: string;
+  is_folder?: boolean;
+  parent_id?: string;
   created_at: string;
 }
 

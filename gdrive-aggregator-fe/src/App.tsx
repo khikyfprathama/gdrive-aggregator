@@ -29,6 +29,7 @@ export function App() {
   const [filterAccountId, setFilterAccountId] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(20);
+  const [folderTrail, setFolderTrail] = useState<{ id: string; name: string }[]>([]);
 
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -51,9 +52,11 @@ export function App() {
       const accountsData = await apiService.getAccounts();
       setAccounts(accountsData);
 
+      const currentFolder = folderTrail.length > 0 ? folderTrail[folderTrail.length - 1] : null;
       const filesData = await apiService.getFiles({
         account_id: filterAccountId > 0 ? filterAccountId : undefined,
         search: searchQuery || undefined,
+        parent_id: currentFolder ? currentFolder.id : undefined,
         limit: pageSize,
         offset: (page - 1) * pageSize,
       });
@@ -65,7 +68,21 @@ export function App() {
     } finally {
       setLoading(false);
     }
-  }, [filterAccountId, searchQuery, page, pageSize, showToast]);
+  }, [filterAccountId, searchQuery, folderTrail, page, pageSize, showToast]);
+
+  const handleEnterFolder = (folder: { id: string; name: string }) => {
+    setFolderTrail((prev) => [...prev, folder]);
+    setPage(1);
+  };
+
+  const handleNavigateBreadcrumb = (index: number) => {
+    if (index < 0) {
+      setFolderTrail([]);
+    } else {
+      setFolderTrail((prev) => prev.slice(0, index + 1));
+    }
+    setPage(1);
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -195,6 +212,9 @@ export function App() {
               setPageSize(size);
               setPage(1);
             }}
+            folderTrail={folderTrail}
+            onEnterFolder={handleEnterFolder}
+            onNavigateBreadcrumb={handleNavigateBreadcrumb}
             onOpenUpload={handleOpenUpload}
           />
         )}

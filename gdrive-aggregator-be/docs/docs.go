@@ -370,6 +370,65 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/files/batch-delete": {
+            "post": {
+                "description": "Menghapus kumpulan file terpilih dari Google Drive dan database lokal",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Hapus Beberapa File Sekaligus",
+                "parameters": [
+                    {
+                        "description": "Daftar ID file yang ingin dihapus",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.BatchDeleteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "additionalProperties": true
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/files/download/{id}": {
             "get": {
                 "description": "Mengunduh file langsung dari Google Drive akun bersangkutan via streaming",
@@ -610,6 +669,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "handler.BatchDeleteRequest": {
+            "type": "object",
+            "required": [
+                "ids"
+            ],
+            "properties": {
+                "ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "model.Account": {
             "type": "object",
             "properties": {
@@ -771,6 +844,9 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "is_folder": {
+                    "type": "boolean"
+                },
                 "md5_checksum": {
                     "type": "string"
                 },
@@ -778,6 +854,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "parent_id": {
                     "type": "string"
                 },
                 "size": {

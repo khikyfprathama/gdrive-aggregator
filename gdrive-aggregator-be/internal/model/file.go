@@ -15,6 +15,9 @@ type FileRecord struct {
 	MD5Checksum  string    `json:"md5_checksum,omitempty"`
 	WebViewLink  string    `json:"web_view_link,omitempty"`
 	IconLink     string    `json:"icon_link,omitempty"`
+	IsFolder     bool      `gorm:"default:false;index" json:"is_folder"`
+	ParentID     string    `gorm:"index" json:"parent_id,omitempty"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
+

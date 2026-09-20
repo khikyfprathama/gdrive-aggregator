@@ -219,8 +219,8 @@ func (s *driveService) SyncAccountFiles(ctx context.Context, account *model.Acco
 	for {
 		call := srv.Files.List().
 			PageSize(100).
-			Q("trashed = false and mimeType != 'application/vnd.google-apps.folder'").
-			Fields("nextPageToken, files(id, name, mimeType, size, md5Checksum, webViewLink, iconLink, createdTime)")
+			Q("trashed = false").
+			Fields("nextPageToken, files(id, name, mimeType, size, md5Checksum, webViewLink, iconLink, createdTime, parents)")
 
 		if pageToken != "" {
 			call = call.PageToken(pageToken)
@@ -239,6 +239,12 @@ func (s *driveService) SyncAccountFiles(ctx context.Context, account *model.Acco
 				}
 			}
 
+			isFolder := f.MimeType == "application/vnd.google-apps.folder"
+			parentID := ""
+			if len(f.Parents) > 0 {
+				parentID = f.Parents[0]
+			}
+
 			record := &model.FileRecord{
 				AccountID:   account.ID,
 				DriveFileID: f.Id,
@@ -248,6 +254,8 @@ func (s *driveService) SyncAccountFiles(ctx context.Context, account *model.Acco
 				MD5Checksum: f.Md5Checksum,
 				WebViewLink: f.WebViewLink,
 				IconLink:    f.IconLink,
+				IsFolder:    isFolder,
+				ParentID:    parentID,
 				CreatedAt:   createdAt,
 				UpdatedAt:   time.Now(),
 			}

@@ -48,6 +48,7 @@ func NewFileHandler(
 func (h *FileHandler) ListFiles(c *gin.Context) {
 	accountIDStr := c.Query("account_id")
 	search := c.Query("search")
+	parentID := c.Query("parent_id")
 	limitStr := c.DefaultQuery("limit", "20")
 	offsetStr := c.DefaultQuery("offset", "0")
 
@@ -61,7 +62,7 @@ func (h *FileHandler) ListFiles(c *gin.Context) {
 	limit, _ := strconv.Atoi(limitStr)
 	offset, _ := strconv.Atoi(offsetStr)
 
-	files, total, err := h.fileRepo.FindAll(accountID, search, limit, offset)
+	files, total, err := h.fileRepo.FindAll(accountID, search, parentID, limit, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, model.ErrorResponse{
 			Success: false,
@@ -361,4 +362,58 @@ func (h *FileHandler) SyncFiles(c *gin.Context) {
 		},
 	})
 }
+
+type BatchDeleteRequest struct {
+	IDs []uint `json:"ids" binding:"required"`
+}
+
+// BatchDeleteFiles godoc
+// @Summary      Hapus Beberapa File Sekaligus
+// @Description  Menghapus kumpulan file terpilih dari Google Drive dan database lokal
+// @Tags         Files
+// @Accept       json
+// @Produce      json
+// @Param        request body BatchDeleteRequest true "Daftar ID file yang ingin dihapus"
+// @Success      200 {object} model.BaseResponse{data=map[string]interface{}}
+// @Failure      400 {object} model.ErrorResponse
+// @Failure      500 {object} model.ErrorResponse
+// @Router       /api/v1/files/batch-delete [post]
+func (h *FileHandler) BatchDeleteFiles(c *gin.Context) {
+	var req BatchDeleteRequest
+	if err := c.ShouldBindJSON(&req); err != nil || len(req.IDs) == 0 {
+		c.JSON(http.StatusBadRequest, model.ErrorResponse{
+			Success: false,
+			Message: "Daftar ID file wajib diisi",
+		})
+		return
+	}
+
+	files, err := h.fileRepo.FindByIDs(req.IDs)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.ErrorResponse{
+			Success: false,
+			Message: "Gagal mengambil data file untuk dihapus",
+		})
+		return
+	}
+
+	deletedCount := 0
+	for _, file := range files {
+		account, err := h.accountRepo.FindByID(file.AccountID)
+		if err == nil && account != nil {
+			_ = h.driveService.DeleteFile(c.Request.Context(), account, file.DriveFileID)
+		}
+		_ = h.fileRepo.Delete(file.ID)
+		deletedCount++
+	}
+
+	c.JSON(http.StatusOK, model.BaseResponse{
+		Success: true,
+		Message: fmt.Sprintf("%d file/folder berhasil dihapus", deletedCount),
+		Data: gin.H{
+			"deleted_count": deletedCount,
+		},
+	})
+}
+
 

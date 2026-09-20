@@ -1,5 +1,14 @@
 basePath: /
 definitions:
+  handler.BatchDeleteRequest:
+    properties:
+      ids:
+        items:
+          type: integer
+        type: array
+    required:
+    - ids
+    type: object
   model.Account:
     properties:
       avatar_url:
@@ -113,11 +122,15 @@ definitions:
         type: string
       id:
         type: integer
+      is_folder:
+        type: boolean
       md5_checksum:
         type: string
       mime_type:
         type: string
       name:
+        type: string
+      parent_id:
         type: string
       size:
         description: bytes
@@ -442,6 +455,43 @@ paths:
           schema:
             $ref: '#/definitions/model.ErrorResponse'
       summary: Hapus File
+      tags:
+      - Files
+  /api/v1/files/batch-delete:
+    post:
+      consumes:
+      - application/json
+      description: Menghapus kumpulan file terpilih dari Google Drive dan database
+        lokal
+      parameters:
+      - description: Daftar ID file yang ingin dihapus
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.BatchDeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.BaseResponse'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Hapus Beberapa File Sekaligus
       tags:
       - Files
   /api/v1/files/download/{id}:

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { FileRecord, Account } from '../types';
 import {
   Download,
@@ -18,6 +18,15 @@ import {
   LayoutList,
   LayoutGrid,
   Eye,
+  Folder,
+  FolderOpen,
+  ChevronRight,
+  HardDrive,
+  CheckSquare,
+  Square,
+  MinusSquare,
+  X,
+  CornerLeftUp,
 } from 'lucide-react';
 import { apiService } from '../services/api';
 import { ImagePreviewModal } from './ImagePreviewModal';
@@ -37,6 +46,9 @@ interface FileBrowserProps {
   onPageChange: (page: number) => void;
   pageSize: number;
   onPageSizeChange: (size: number) => void;
+  folderTrail: { id: string; name: string }[];
+  onEnterFolder: (folder: { id: string; name: string }) => void;
+  onNavigateBreadcrumb: (index: number) => void;
   onOpenUpload: (file?: File) => void;
 }
 
@@ -55,22 +67,40 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
   onPageChange,
   pageSize,
   onPageSizeChange,
+  folderTrail,
+  onEnterFolder,
+  onNavigateBreadcrumb,
   onOpenUpload,
 }) => {
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [typeFilter, setTypeFilter] = useState<'all' | 'docs' | 'media' | 'archives' | 'code'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'folders' | 'docs' | 'media' | 'archives' | 'code'>('all');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [previewFile, setPreviewFile] = useState<FileRecord | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
+  // Clear selection when page or folder changes
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [page, folderTrail]);
+
+  const isFolderItem = (f: FileRecord): boolean => {
+    return f.is_folder === true || f.mime_type === 'application/vnd.google-apps.folder';
+  };
 
   const isImageFile = (filename: string, mime: string): boolean => {
     const ext = filename.split('.').pop()?.toLowerCase() || '';
     return ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico'].includes(ext) || mime.startsWith('image/');
   };
 
-  const getFileIcon = (filename: string, mime: string) => {
+  const getFileIcon = (f: FileRecord) => {
+    if (isFolderItem(f)) {
+      return <Folder className="w-4 h-4 text-amber-400 fill-amber-400/20 shrink-0" />;
+    }
+    const filename = f.name;
+    const mime = f.mime_type || '';
     const ext = filename.split('.').pop()?.toLowerCase() || '';
     if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(ext) || mime.includes('image')) {
       return <FileImage className="w-4 h-4 text-emerald-400 shrink-0" />;
@@ -93,7 +123,8 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
     return <File className="w-4 h-4 text-zinc-400 shrink-0" />;
   };
 
-  const formatFileSize = (bytes: number): string => {
+  const formatFileSize = (bytes: number, isFolder: boolean): string => {
+    if (isFolder) return '-';
     if (bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -114,6 +145,11 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
   };
 
   const handleDownload = async (file: FileRecord) => {
+    if (isFolderItem(file)) {
+      onEnterFolder({ id: file.drive_file_id, name: file.name });
+      return;
+    }
+
     try {
       setDownloadingId(file.id);
       onShowToast(`Downloading ${file.name}...`, 'success');
@@ -126,14 +162,15 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
   };
 
   const handleDelete = async (file: FileRecord) => {
-    if (!window.confirm(`Hapus permanen "${file.name}" dari Google Drive?`)) {
+    const itemType = isFolderItem(file) ? 'folder' : 'file';
+    if (!window.confirm(`Hapus permanen ${itemType} "${file.name}" dari Google Drive?`)) {
       return;
     }
 
     try {
       setDeletingId(file.id);
       await apiService.deleteFile(file.id);
-      onShowToast(`File "${file.name}" berhasil dihapus.`, 'success');
+      onShowToast(`${itemType === 'folder' ? 'Folder' : 'File'} "${file.name}" berhasil dihapus.`, 'success');
       onRefresh();
     } catch (err: any) {
       onShowToast(`Gagal menghapus: ${err.message}`, 'error');
@@ -145,14 +182,67 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
   const handleSyncFiles = async () => {
     try {
       setIsSyncing(true);
-      onShowToast('Memindai Google Drive dan mengimpor file...', 'success');
+      onShowToast('Memindai seluruh folder & file dari Google Drive...', 'success');
       const res = await apiService.syncFiles(filterAccountId > 0 ? filterAccountId : undefined);
-      onShowToast(`Sinkronisasi selesai: ${res.synced_files} file ditemukan & diindeks.`, 'success');
+      onShowToast(`Sinkronisasi selesai: ${res.synced_files} file/folder berhasil diindeks.`, 'success');
       onRefresh();
     } catch (err: any) {
-      onShowToast(err.response?.data?.message || 'Gagal sinkronisasi file dari Google Drive', 'error');
+      onShowToast(err.response?.data?.message || 'Gagal sinkronisasi dari Google Drive', 'error');
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  // Multi-Selection handlers
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const allVisibleSelected = files.length > 0 && files.every((f) => selectedIds.has(f.id));
+  const someVisibleSelected = files.some((f) => selectedIds.has(f.id)) && !allVisibleSelected;
+
+  const toggleSelectAll = () => {
+    if (allVisibleSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(files.map((f) => f.id)));
+    }
+  };
+
+  const handleBatchDownload = async () => {
+    const selectedFiles = files.filter((f) => selectedIds.has(f.id) && !isFolderItem(f));
+    if (selectedFiles.length === 0) {
+      onShowToast('Tidak ada file biner yang dipilih untuk diunduh.', 'error');
+      return;
+    }
+    onShowToast(`Memulai unduhan bertahap ${selectedFiles.length} file...`, 'success');
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const f = selectedFiles[i];
+      await apiService.downloadFile(f.id, f.name);
+      if (i < selectedFiles.length - 1) {
+        await new Promise((r) => setTimeout(r, 350));
+      }
+    }
+  };
+
+  const handleBatchDelete = async () => {
+    const count = selectedIds.size;
+    if (!window.confirm(`Hapus permanen ${count} file/folder yang dipilih dari Google Drive?`)) {
+      return;
+    }
+    try {
+      onShowToast(`Menghapus ${count} item...`, 'success');
+      const res = await apiService.batchDeleteFiles(Array.from(selectedIds));
+      onShowToast(`Berhasil menghapus ${res.deleted_count} file/folder.`, 'success');
+      setSelectedIds(new Set());
+      onRefresh();
+    } catch (err: any) {
+      onShowToast(`Gagal menghapus file: ${err.message}`, 'error');
     }
   };
 
@@ -176,7 +266,10 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 
   // Filter by file type
   const filteredFiles = files.filter((f) => {
+    const isFolder = isFolderItem(f);
     if (typeFilter === 'all') return true;
+    if (typeFilter === 'folders') return isFolder;
+    if (isFolder) return false; // Other filters only apply to files
     const ext = f.name.split('.').pop()?.toLowerCase() || '';
     if (typeFilter === 'docs') return ['pdf', 'doc', 'docx', 'txt', 'md', 'xls', 'xlsx'].includes(ext);
     if (typeFilter === 'media') return ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'mp4', 'mkv', 'webm', 'mov', 'mp3', 'wav'].includes(ext);
@@ -211,7 +304,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`bg-zinc-900 border rounded-xl overflow-hidden shadow-sm transition-all duration-150 ${
+      className={`bg-zinc-900 border rounded-xl overflow-hidden shadow-sm transition-all duration-150 relative ${
         isDragOver ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-zinc-800'
       }`}
     >
@@ -224,7 +317,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Cari nama file..."
+              placeholder="Cari file atau folder..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
@@ -233,7 +326,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 
           {/* Quick Type Filter Pills */}
           <div className="inline-flex bg-zinc-950 border border-zinc-800 rounded-lg p-0.5 text-xs">
-            {(['all', 'docs', 'media', 'archives', 'code'] as const).map((t) => (
+            {(['all', 'folders', 'docs', 'media', 'archives', 'code'] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTypeFilter(t)}
@@ -265,7 +358,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             </select>
           </div>
 
-          {/* View Mode Switcher (List vs Grid) */}
+          {/* View Mode Switcher */}
           <div className="inline-flex bg-zinc-950 border border-zinc-800 rounded-lg p-0.5 text-xs">
             <button
               onClick={() => setViewMode('list')}
@@ -291,7 +384,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             onClick={handleSyncFiles}
             disabled={isSyncing || loading}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs font-medium transition border border-zinc-750"
-            title="Scan & import file yang ada di Google Drive ke database lokal"
+            title="Scan & sinkronisasi semua file dan folder dari Google Drive"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-blue-400' : 'text-zinc-400'}`} />
             <span>{isSyncing ? 'Syncing...' : 'Sync dari Drive'}</span>
@@ -301,7 +394,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             onClick={onRefresh}
             disabled={loading || isSyncing}
             className="p-2 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
-            title="Muat ulang data file"
+            title="Muat ulang data"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-blue-400' : ''}`} />
           </button>
@@ -314,6 +407,49 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             <span>Upload</span>
           </button>
         </div>
+      </div>
+
+      {/* Breadcrumbs Navigation Bar */}
+      <div className="px-4 py-2.5 bg-zinc-950/60 border-b border-zinc-800 flex items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
+          <button
+            onClick={() => onNavigateBreadcrumb(-1)}
+            className={`flex items-center gap-1.5 px-2 py-1 rounded transition hover:bg-zinc-800 ${
+              folderTrail.length === 0 ? 'text-white font-semibold bg-zinc-800/60' : 'text-zinc-400'
+            }`}
+          >
+            <HardDrive className="w-3.5 h-3.5 text-blue-400" />
+            <span>Root / Semua</span>
+          </button>
+
+          {folderTrail.map((folder, idx) => (
+            <React.Fragment key={folder.id}>
+              <ChevronRight className="w-3.5 h-3.5 text-zinc-600 shrink-0" />
+              <button
+                onClick={() => onNavigateBreadcrumb(idx)}
+                className={`flex items-center gap-1 px-2 py-1 rounded transition hover:bg-zinc-800 truncate max-w-[160px] ${
+                  idx === folderTrail.length - 1 ? 'text-white font-semibold bg-zinc-800/60' : 'text-zinc-400'
+                }`}
+                title={folder.name}
+              >
+                <FolderOpen className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="truncate">{folder.name}</span>
+              </button>
+            </React.Fragment>
+          ))}
+        </div>
+
+        {/* Up one level button if in folder */}
+        {folderTrail.length > 0 && (
+          <button
+            onClick={() => onNavigateBreadcrumb(folderTrail.length - 2)}
+            className="flex items-center gap-1 px-2 py-1 bg-zinc-800/60 hover:bg-zinc-800 text-zinc-300 rounded text-[11px] transition shrink-0"
+            title="Kembali ke folder sebelumnya"
+          >
+            <CornerLeftUp className="w-3 h-3 text-zinc-400" />
+            <span>Naik Level</span>
+          </button>
+        )}
       </div>
 
       {/* Drag & Drop Hint Banner */}
@@ -330,7 +466,24 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
           <table className="w-full text-left text-xs">
             <thead className="bg-zinc-950/60 text-zinc-400 font-semibold border-b border-zinc-800 uppercase tracking-wider text-[11px]">
               <tr>
-                <th className="py-2.5 px-4 font-medium">Nama File</th>
+                {/* Select All Checkbox */}
+                <th className="py-2.5 px-3 w-8 text-center">
+                  <button
+                    onClick={toggleSelectAll}
+                    disabled={loading || filteredFiles.length === 0}
+                    className="text-zinc-400 hover:text-white transition disabled:opacity-40"
+                    title={allVisibleSelected ? 'Batalkan pilihan semua' : 'Pilih semua di halaman ini'}
+                  >
+                    {allVisibleSelected ? (
+                      <CheckSquare className="w-4 h-4 text-blue-500" />
+                    ) : someVisibleSelected ? (
+                      <MinusSquare className="w-4 h-4 text-blue-400" />
+                    ) : (
+                      <Square className="w-4 h-4" />
+                    )}
+                  </button>
+                </th>
+                <th className="py-2.5 px-3 font-medium">Nama</th>
                 <th className="py-2.5 px-4 font-medium hidden sm:table-cell">Akun Penyimpan</th>
                 <th className="py-2.5 px-4 font-medium">Ukuran</th>
                 <th className="py-2.5 px-4 font-medium hidden md:table-cell">Diunggah</th>
@@ -340,24 +493,24 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="py-16 text-center text-zinc-400">
+                  <td colSpan={6} className="py-16 text-center text-zinc-400">
                     <div className="flex flex-col items-center gap-2">
                       <RefreshCw className="w-5 h-5 animate-spin text-blue-400" />
-                      <span>Memuat daftar file...</span>
+                      <span>Memuat daftar file & folder...</span>
                     </div>
                   </td>
                 </tr>
               ) : filteredFiles.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-14 text-center">
+                  <td colSpan={6} className="py-14 text-center">
                     <div className="flex flex-col items-center gap-3 max-w-md mx-auto">
                       <div className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-400">
                         <FileText className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-xs font-semibold text-zinc-200">Belum ada file di halaman ini</p>
+                        <p className="text-xs font-semibold text-zinc-200">Belum ada file atau folder di sini</p>
                         <p className="text-[11px] text-zinc-400 mt-1 leading-relaxed">
-                          Jika akun Google Drive Anda sudah memiliki file sebelumnya, klik tombol <strong>Sync dari Drive</strong> di bawah untuk memindai dan mengimpor file yang ada.
+                          Jika akun Google Drive Anda memiliki folder & file sebelumnya, klik tombol <strong>Sync dari Drive</strong> di bawah untuk memindai struktur foldernya.
                         </p>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
@@ -381,13 +534,45 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                 </tr>
               ) : (
                 filteredFiles.map((f) => {
-                  const isImg = isImageFile(f.name, f.mime_type);
+                  const isFolder = isFolderItem(f);
+                  const isImg = !isFolder && isImageFile(f.name, f.mime_type);
+                  const isSelected = selectedIds.has(f.id);
+
                   return (
-                    <tr key={f.id} className="hover:bg-zinc-800/40 transition group">
-                      {/* File Name & Thumbnail */}
-                      <td className="py-2.5 px-4">
+                    <tr
+                      key={f.id}
+                      className={`transition group ${
+                        isSelected ? 'bg-blue-950/20 hover:bg-blue-900/30' : 'hover:bg-zinc-800/40'
+                      }`}
+                    >
+                      {/* Checkbox */}
+                      <td className="py-2.5 px-3 text-center">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSelect(f.id);
+                          }}
+                          className="text-zinc-500 hover:text-white transition"
+                        >
+                          {isSelected ? (
+                            <CheckSquare className="w-4 h-4 text-blue-500" />
+                          ) : (
+                            <Square className="w-4 h-4 text-zinc-600 hover:text-zinc-400" />
+                          )}
+                        </button>
+                      </td>
+
+                      {/* File / Folder Name & Thumbnail */}
+                      <td className="py-2.5 px-3">
                         <div className="flex items-center gap-3">
-                          {isImg ? (
+                          {isFolder ? (
+                            <div
+                              onClick={() => onEnterFolder({ id: f.drive_file_id, name: f.name })}
+                              className="w-8 h-8 rounded bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0 cursor-pointer hover:bg-amber-500/20 transition"
+                            >
+                              <Folder className="w-4 h-4 text-amber-400 fill-amber-400/30" />
+                            </div>
+                          ) : isImg ? (
                             <div
                               onClick={() => setPreviewFile(f)}
                               className="relative w-8 h-8 rounded bg-zinc-950 border border-zinc-800 overflow-hidden shrink-0 cursor-pointer group/thumb hover:border-blue-500 transition"
@@ -408,19 +593,33 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                             </div>
                           ) : (
                             <div className="w-8 h-8 rounded bg-zinc-950 border border-zinc-800 flex items-center justify-center shrink-0">
-                              {getFileIcon(f.name, f.mime_type)}
+                              {getFileIcon(f)}
                             </div>
                           )}
 
-                          <span
-                            onClick={() => isImg && setPreviewFile(f)}
-                            className={`font-medium text-white truncate max-w-xs sm:max-w-md ${
-                              isImg ? 'cursor-pointer hover:text-blue-400' : ''
-                            }`}
-                            title={f.name}
-                          >
-                            {f.name}
-                          </span>
+                          <div className="flex items-center gap-2 truncate">
+                            <span
+                              onClick={() => {
+                                if (isFolder) onEnterFolder({ id: f.drive_file_id, name: f.name });
+                                else if (isImg) setPreviewFile(f);
+                              }}
+                              className={`font-medium truncate max-w-xs sm:max-w-md ${
+                                isFolder
+                                  ? 'text-white cursor-pointer hover:text-amber-300 font-semibold'
+                                  : isImg
+                                  ? 'text-white cursor-pointer hover:text-blue-400'
+                                  : 'text-zinc-200'
+                              }`}
+                              title={f.name}
+                            >
+                              {f.name}
+                            </span>
+                            {isFolder && (
+                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
+                                Folder
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </td>
 
@@ -433,7 +632,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 
                       {/* Size */}
                       <td className="py-2.5 px-4 font-mono text-[11px] text-zinc-300">
-                        {formatFileSize(f.size)}
+                        {formatFileSize(f.size, isFolder)}
                       </td>
 
                       {/* Date */}
@@ -444,28 +643,40 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                       {/* Actions */}
                       <td className="py-2.5 px-4 text-right">
                         <div className="inline-flex items-center gap-1 opacity-80 group-hover:opacity-100 transition">
-                          {isImg && (
+                          {isFolder ? (
                             <button
-                              onClick={() => setPreviewFile(f)}
-                              className="p-1.5 text-zinc-400 hover:text-blue-400 hover:bg-zinc-800 rounded transition"
-                              title="Pratinjau gambar"
+                              onClick={() => onEnterFolder({ id: f.drive_file_id, name: f.name })}
+                              className="p-1.5 text-zinc-400 hover:text-amber-400 hover:bg-zinc-800 rounded transition"
+                              title="Buka Folder"
                             >
-                              <Eye className="w-3.5 h-3.5" />
+                              <FolderOpen className="w-3.5 h-3.5" />
                             </button>
+                          ) : (
+                            <>
+                              {isImg && (
+                                <button
+                                  onClick={() => setPreviewFile(f)}
+                                  className="p-1.5 text-zinc-400 hover:text-blue-400 hover:bg-zinc-800 rounded transition"
+                                  title="Pratinjau gambar"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleDownload(f)}
+                                disabled={downloadingId === f.id}
+                                className="p-1.5 text-zinc-400 hover:text-emerald-400 hover:bg-zinc-800 rounded transition"
+                                title="Unduh file"
+                              >
+                                <Download className={`w-3.5 h-3.5 ${downloadingId === f.id ? 'animate-bounce text-emerald-400' : ''}`} />
+                              </button>
+                            </>
                           )}
-                          <button
-                            onClick={() => handleDownload(f)}
-                            disabled={downloadingId === f.id}
-                            className="p-1.5 text-zinc-400 hover:text-emerald-400 hover:bg-zinc-800 rounded transition"
-                            title="Unduh file"
-                          >
-                            <Download className={`w-3.5 h-3.5 ${downloadingId === f.id ? 'animate-bounce text-emerald-400' : ''}`} />
-                          </button>
                           <button
                             onClick={() => handleDelete(f)}
                             disabled={deletingId === f.id}
                             className="p-1.5 text-zinc-400 hover:text-rose-400 hover:bg-zinc-800 rounded transition"
-                            title="Hapus file"
+                            title="Hapus"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -488,25 +699,57 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             </div>
           ) : filteredFiles.length === 0 ? (
             <div className="py-14 text-center">
-              <p className="text-xs font-medium text-zinc-400">Tidak ada file yang ditemukan</p>
+              <p className="text-xs font-medium text-zinc-400">Tidak ada file atau folder yang ditemukan</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
               {filteredFiles.map((f) => {
-                const isImg = isImageFile(f.name, f.mime_type);
+                const isFolder = isFolderItem(f);
+                const isImg = !isFolder && isImageFile(f.name, f.mime_type);
+                const isSelected = selectedIds.has(f.id);
+
                 return (
                   <div
                     key={f.id}
-                    className="bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden group hover:border-zinc-700 transition flex flex-col"
+                    className={`bg-zinc-950 border rounded-lg overflow-hidden group transition flex flex-col relative ${
+                      isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-zinc-800 hover:border-zinc-700'
+                    }`}
                   >
-                    {/* Media Thumbnail Container */}
+                    {/* Checkbox Overlay */}
+                    <div className="absolute top-2 left-2 z-10">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSelect(f.id);
+                        }}
+                        className="bg-black/60 backdrop-blur-sm p-1 rounded hover:bg-black/80 transition"
+                      >
+                        {isSelected ? (
+                          <CheckSquare className="w-3.5 h-3.5 text-blue-500" />
+                        ) : (
+                          <Square className="w-3.5 h-3.5 text-zinc-400" />
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Media / Folder Thumbnail Container */}
                     <div
-                      onClick={() => isImg && setPreviewFile(f)}
-                      className={`relative h-32 bg-zinc-900 flex items-center justify-center overflow-hidden ${
-                        isImg ? 'cursor-pointer' : ''
+                      onClick={() => {
+                        if (isFolder) onEnterFolder({ id: f.drive_file_id, name: f.name });
+                        else if (isImg) setPreviewFile(f);
+                      }}
+                      className={`relative h-32 flex items-center justify-center overflow-hidden cursor-pointer ${
+                        isFolder ? 'bg-amber-500/5 hover:bg-amber-500/10' : 'bg-zinc-900'
                       }`}
                     >
-                      {isImg ? (
+                      {isFolder ? (
+                        <div className="flex flex-col items-center gap-1.5">
+                          <Folder className="w-10 h-10 text-amber-400 fill-amber-400/20 transition-transform group-hover:scale-110" />
+                          <span className="text-[10px] font-mono text-amber-400/80 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                            Folder
+                          </span>
+                        </div>
+                      ) : isImg ? (
                         <>
                           <img
                             src={apiService.getFilePreviewUrl(f.id)}
@@ -522,7 +765,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                           </div>
                         </>
                       ) : (
-                        <div className="text-zinc-500">{getFileIcon(f.name, f.mime_type)}</div>
+                        <div className="text-zinc-500 scale-125">{getFileIcon(f)}</div>
                       )}
                     </div>
 
@@ -532,12 +775,15 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                         <p
                           className="font-medium text-xs text-white truncate hover:text-blue-400 cursor-pointer"
                           title={f.name}
-                          onClick={() => isImg && setPreviewFile(f)}
+                          onClick={() => {
+                            if (isFolder) onEnterFolder({ id: f.drive_file_id, name: f.name });
+                            else if (isImg) setPreviewFile(f);
+                          }}
                         >
                           {f.name}
                         </p>
                         <div className="flex items-center justify-between text-[11px] text-zinc-400 font-mono mt-1">
-                          <span>{formatFileSize(f.size)}</span>
+                          <span>{formatFileSize(f.size, isFolder)}</span>
                           <span className="truncate max-w-[80px]" title={f.account_email}>
                             {f.account_email?.split('@')[0]}
                           </span>
@@ -546,7 +792,16 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 
                       {/* Card Action Buttons */}
                       <div className="flex items-center justify-between pt-1 border-t border-zinc-800/60">
-                        {isImg ? (
+                        {isFolder ? (
+                          <button
+                            onClick={() => onEnterFolder({ id: f.drive_file_id, name: f.name })}
+                            className="text-zinc-400 hover:text-amber-400 p-1 rounded flex items-center gap-1 text-[11px]"
+                            title="Buka Folder"
+                          >
+                            <FolderOpen className="w-3.5 h-3.5" />
+                            <span>Buka</span>
+                          </button>
+                        ) : isImg ? (
                           <button
                             onClick={() => setPreviewFile(f)}
                             className="text-zinc-400 hover:text-blue-400 p-1 rounded"
@@ -558,14 +813,16 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                           <span />
                         )}
                         <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleDownload(f)}
-                            disabled={downloadingId === f.id}
-                            className="text-zinc-400 hover:text-emerald-400 p-1 rounded"
-                            title="Unduh"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                          </button>
+                          {!isFolder && (
+                            <button
+                              onClick={() => handleDownload(f)}
+                              disabled={downloadingId === f.id}
+                              className="text-zinc-400 hover:text-emerald-400 p-1 rounded"
+                              title="Unduh"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                           <button
                             onClick={() => handleDelete(f)}
                             disabled={deletingId === f.id}
@@ -591,7 +848,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
         <div className="flex items-center gap-3">
           <span>
             Menampilkan <span className="font-medium text-white">{startItem}-{endItem}</span> dari{' '}
-            <span className="font-medium text-white">{totalFiles}</span> file
+            <span className="font-medium text-white">{totalFiles}</span> file/folder
           </span>
 
           <div className="flex items-center gap-1.5 pl-3 border-l border-zinc-800">
@@ -670,6 +927,44 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Floating Multi-Select Batch Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-900/95 border border-zinc-700 shadow-2xl backdrop-blur-md rounded-xl px-4 py-2.5 flex items-center gap-3 text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div className="flex items-center gap-2 pr-3 border-r border-zinc-800">
+            <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[11px]">
+              {selectedIds.size}
+            </span>
+            <span className="text-zinc-200 font-medium">dipilih</span>
+          </div>
+
+          <button
+            onClick={handleBatchDownload}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-lg transition"
+            title="Unduh file yang dipilih"
+          >
+            <Download className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Unduh ({selectedIds.size})</span>
+          </button>
+
+          <button
+            onClick={handleBatchDelete}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 rounded-lg transition"
+            title="Hapus permanen file/folder yang dipilih"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Hapus ({selectedIds.size})</span>
+          </button>
+
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition"
+            title="Batalkan Pilihan"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Image Preview Modal */}
       <ImagePreviewModal

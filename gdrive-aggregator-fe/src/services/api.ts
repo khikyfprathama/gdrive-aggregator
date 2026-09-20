@@ -64,7 +64,7 @@ export const apiService = {
   },
 
   // Files
-  getFiles: async (params?: { account_id?: number; search?: string; limit?: number; offset?: number }): Promise<FilesResponse> => {
+  getFiles: async (params?: { account_id?: number; search?: string; parent_id?: string; limit?: number; offset?: number }): Promise<FilesResponse> => {
     const res = await api.get<FilesResponse>('/api/v1/files', { params });
     return res.data;
   },
@@ -112,6 +112,11 @@ export const apiService = {
 
   deleteFile: async (id: number): Promise<void> => {
     await api.delete(`/api/v1/files/${id}`);
+  },
+
+  batchDeleteFiles: async (ids: number[]): Promise<{ deleted_count: number }> => {
+    const res = await api.post<BaseResponse<{ deleted_count: number }>>('/api/v1/files/batch-delete', { ids });
+    return res.data.data;
   },
 
   syncFiles: async (accountId?: number): Promise<{ synced_files: number; accounts_processed: number }> => {

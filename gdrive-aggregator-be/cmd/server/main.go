@@ -105,6 +105,7 @@ func main() {
 			files.POST("/sync", fileHandler.SyncFiles)
 			files.GET("/download/:id", fileHandler.DownloadFile)
 			files.DELETE("/:id", fileHandler.DeleteFile)
+			files.POST("/batch-delete", fileHandler.BatchDeleteFiles)
 		}
 	}
 
