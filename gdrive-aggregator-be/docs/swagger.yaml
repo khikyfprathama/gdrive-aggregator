@@ -1,0 +1,540 @@
+basePath: /
+definitions:
+  model.Account:
+    properties:
+      avatar_url:
+        type: string
+      created_at:
+        type: string
+      display_name:
+        type: string
+      email:
+        type: string
+      files:
+        description: Relations
+        items:
+          $ref: '#/definitions/model.FileRecord'
+        type: array
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      storage_limit:
+        description: bytes
+        type: integer
+      storage_usage:
+        description: bytes
+        type: integer
+      updated_at:
+        type: string
+      usage_in_drive:
+        type: integer
+      usage_in_trash:
+        type: integer
+    type: object
+  model.AccountSimpleDTO:
+    properties:
+      avatar_url:
+        example: https://...
+        type: string
+      display_name:
+        example: John Doe
+        type: string
+      email:
+        example: user@gmail.com
+        type: string
+      free_storage:
+        example: 10737418240
+        type: integer
+      free_storage_str:
+        example: 10.00 GB
+        type: string
+      id:
+        example: 1
+        type: integer
+      is_active:
+        example: true
+        type: boolean
+      storage_limit:
+        example: 16106127360
+        type: integer
+      storage_limit_str:
+        example: 15.00 GB
+        type: string
+      storage_usage:
+        example: 5368709120
+        type: integer
+      storage_usage_str:
+        example: 5.00 GB
+        type: string
+      usage_percent:
+        example: 33.33
+        type: number
+    type: object
+  model.AuthURLResponse:
+    properties:
+      auth_url:
+        example: https://accounts.google.com/o/oauth2/auth?...
+        type: string
+    type: object
+  model.BaseResponse:
+    properties:
+      data: {}
+      message:
+        example: Operation successful
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  model.ErrorResponse:
+    properties:
+      error:
+        example: detail error
+        type: string
+      message:
+        example: Terjadi kesalahan
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  model.FileRecord:
+    properties:
+      account_email:
+        type: string
+      account_id:
+        type: integer
+      created_at:
+        type: string
+      drive_file_id:
+        type: string
+      icon_link:
+        type: string
+      id:
+        type: integer
+      md5_checksum:
+        type: string
+      mime_type:
+        type: string
+      name:
+        type: string
+      size:
+        description: bytes
+        type: integer
+      updated_at:
+        type: string
+      web_view_link:
+        type: string
+    type: object
+  model.FileUploadResponseDTO:
+    properties:
+      account_email:
+        example: user@gmail.com
+        type: string
+      account_id:
+        example: 1
+        type: integer
+      drive_file_id:
+        example: 1a2b3c4d...
+        type: string
+      file_id:
+        example: 1
+        type: integer
+      mime_type:
+        example: application/pdf
+        type: string
+      name:
+        example: document.pdf
+        type: string
+      size:
+        example: 1048576
+        type: integer
+      size_human:
+        example: 1.00 MB
+        type: string
+      web_view_link:
+        example: https://drive.google.com/file/d/...
+        type: string
+    type: object
+  model.StorageOverviewDTO:
+    properties:
+      account_count:
+        example: 2
+        type: integer
+      accounts:
+        items:
+          $ref: '#/definitions/model.AccountSimpleDTO'
+        type: array
+      total_free_bytes:
+        example: 21474836480
+        type: integer
+      total_free_human:
+        example: 20.00 GB
+        type: string
+      total_limit_bytes:
+        example: 32212254720
+        type: integer
+      total_limit_human:
+        example: 30.00 GB
+        type: string
+      total_usage_bytes:
+        example: 10737418240
+        type: integer
+      total_usage_human:
+        example: 10.00 GB
+        type: string
+      usage_percentage:
+        example: 33.33
+        type: number
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: Google Drive Aggregator Support
+  description: |-
+    REST API untuk mengagregasi beberapa akun Google Drive ke dalam satu storage pool terpusat.
+    Mendukung smart allocation (otomatis pilih akun dengan sisa kuota terbesar), streaming download, dan manajemen multi-akun.
+  title: Google Drive Aggregator API
+  version: "1.0"
+paths:
+  /api/v1/accounts:
+    get:
+      consumes:
+      - application/json
+      description: Menampilkan semua akun Google yang terhubung ke aggregator
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Account'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Daftar Semua Akun Terhubung
+      tags:
+      - Accounts
+  /api/v1/accounts/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Menghapus akun Google dari aggregator
+      parameters:
+      - description: ID Akun
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Hapus / Putuskan Akun
+      tags:
+      - Accounts
+    get:
+      consumes:
+      - application/json
+      description: Menampilkan detail akun Google tertentu berdasarkan ID
+      parameters:
+      - description: ID Akun
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Account'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Detail Akun
+      tags:
+      - Accounts
+  /api/v1/accounts/{id}/sync:
+    post:
+      consumes:
+      - application/json
+      description: Memperbarui data penggunaan storage akun langsung dari Google Drive
+        API
+      parameters:
+      - description: ID Akun
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Account'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Sinkronisasi Kuota Akun
+      tags:
+      - Accounts
+  /api/v1/auth/google/callback:
+    get:
+      consumes:
+      - application/json
+      description: Menerima authorization code dari Google dan menyimpan token akun
+        ke database
+      parameters:
+      - description: Authorization code dari Google
+        in: query
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Account'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Callback Google OAuth2
+      tags:
+      - Auth
+  /api/v1/auth/google/url:
+    get:
+      consumes:
+      - application/json
+      description: Menghasilkan URL autentikasi Google untuk menghubungkan akun Gmail/Drive
+        baru
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.AuthURLResponse'
+              type: object
+      summary: Dapatkan URL Login Google OAuth2
+      tags:
+      - Auth
+  /api/v1/files:
+    get:
+      consumes:
+      - application/json
+      description: Menampilkan metadata file dari seluruh akun Google Drive yang teragregasi
+      parameters:
+      - description: Filter berdasarkan ID akun
+        in: query
+        name: account_id
+        type: integer
+      - description: Cari berdasarkan nama file
+        in: query
+        name: search
+        type: string
+      - description: Jumlah per halaman (default 20)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset pagination (default 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.FileRecord'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Daftar Semua File
+      tags:
+      - Files
+  /api/v1/files/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Menghapus file dari Google Drive dan database lokal
+      parameters:
+      - description: ID file di database
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Hapus File
+      tags:
+      - Files
+  /api/v1/files/download/{id}:
+    get:
+      description: Mengunduh file langsung dari Google Drive akun bersangkutan via
+        streaming
+      parameters:
+      - description: ID file di database
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: File stream
+          schema:
+            type: file
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Stream Download File
+      tags:
+      - Files
+  /api/v1/files/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Mengunggah file biner. Jika account_id tidak diisi, sistem otomatis
+        memilih akun dengan sisa kuota terbesar (*Smart Storage Allocation*).
+      parameters:
+      - description: Pilih file yang ingin diunggah
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: 'ID Akun tujuan (opsional, default: auto-pilih akun paling lega)'
+        in: formData
+        name: account_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.FileUploadResponseDTO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Upload File ke Google Drive
+      tags:
+      - Files
+  /api/v1/storage/overview:
+    get:
+      consumes:
+      - application/json
+      description: Menampilkan total kapasitas, penggunaan, dan sisa ruang dari seluruh
+        akun Google yang terhubung
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.StorageOverviewDTO'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Ringkasan Pool Storage Agregator
+      tags:
+      - Storage
+swagger: "2.0"

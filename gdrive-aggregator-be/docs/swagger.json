@@ -1,0 +1,824 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "REST API untuk mengagregasi beberapa akun Google Drive ke dalam satu storage pool terpusat.\nMendukung smart allocation (otomatis pilih akun dengan sisa kuota terbesar), streaming download, dan manajemen multi-akun.",
+        "title": "Google Drive Aggregator API",
+        "contact": {
+            "name": "Google Drive Aggregator Support"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/api/v1/accounts": {
+            "get": {
+                "description": "Menampilkan semua akun Google yang terhubung ke aggregator",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Daftar Semua Akun Terhubung",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Account"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/accounts/{id}": {
+            "get": {
+                "description": "Menampilkan detail akun Google tertentu berdasarkan ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Detail Akun",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID Akun",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Account"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Menghapus akun Google dari aggregator",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Hapus / Putuskan Akun",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID Akun",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/accounts/{id}/sync": {
+            "post": {
+                "description": "Memperbarui data penggunaan storage akun langsung dari Google Drive API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Sinkronisasi Kuota Akun",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID Akun",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Account"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/google/callback": {
+            "get": {
+                "description": "Menerima authorization code dari Google dan menyimpan token akun ke database",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Callback Google OAuth2",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization code dari Google",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Account"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/google/url": {
+            "get": {
+                "description": "Menghasilkan URL autentikasi Google untuk menghubungkan akun Gmail/Drive baru",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Dapatkan URL Login Google OAuth2",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.AuthURLResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/files": {
+            "get": {
+                "description": "Menampilkan metadata file dari seluruh akun Google Drive yang teragregasi",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Daftar Semua File",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Filter berdasarkan ID akun",
+                        "name": "account_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cari berdasarkan nama file",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Jumlah per halaman (default 20)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset pagination (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.FileRecord"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/files/download/{id}": {
+            "get": {
+                "description": "Mengunduh file langsung dari Google Drive akun bersangkutan via streaming",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Stream Download File",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID file di database",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File stream",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/files/upload": {
+            "post": {
+                "description": "Mengunggah file biner. Jika account_id tidak diisi, sistem otomatis memilih akun dengan sisa kuota terbesar (*Smart Storage Allocation*).",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Upload File ke Google Drive",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Pilih file yang ingin diunggah",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID Akun tujuan (opsional, default: auto-pilih akun paling lega)",
+                        "name": "account_id",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.FileUploadResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/files/{id}": {
+            "delete": {
+                "description": "Menghapus file dari Google Drive dan database lokal",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Hapus File",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID file di database",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/storage/overview": {
+            "get": {
+                "description": "Menampilkan total kapasitas, penggunaan, dan sisa ruang dari seluruh akun Google yang terhubung",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Ringkasan Pool Storage Agregator",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.StorageOverviewDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "model.Account": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "files": {
+                    "description": "Relations",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.FileRecord"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "storage_limit": {
+                    "description": "bytes",
+                    "type": "integer"
+                },
+                "storage_usage": {
+                    "description": "bytes",
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "usage_in_drive": {
+                    "type": "integer"
+                },
+                "usage_in_trash": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.AccountSimpleDTO": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string",
+                    "example": "https://..."
+                },
+                "display_name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "user@gmail.com"
+                },
+                "free_storage": {
+                    "type": "integer",
+                    "example": 10737418240
+                },
+                "free_storage_str": {
+                    "type": "string",
+                    "example": "10.00 GB"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "is_active": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "storage_limit": {
+                    "type": "integer",
+                    "example": 16106127360
+                },
+                "storage_limit_str": {
+                    "type": "string",
+                    "example": "15.00 GB"
+                },
+                "storage_usage": {
+                    "type": "integer",
+                    "example": 5368709120
+                },
+                "storage_usage_str": {
+                    "type": "string",
+                    "example": "5.00 GB"
+                },
+                "usage_percent": {
+                    "type": "number",
+                    "example": 33.33
+                }
+            }
+        },
+        "model.AuthURLResponse": {
+            "type": "object",
+            "properties": {
+                "auth_url": {
+                    "type": "string",
+                    "example": "https://accounts.google.com/o/oauth2/auth?..."
+                }
+            }
+        },
+        "model.BaseResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string",
+                    "example": "Operation successful"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "model.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "detail error"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Terjadi kesalahan"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "model.FileRecord": {
+            "type": "object",
+            "properties": {
+                "account_email": {
+                    "type": "string"
+                },
+                "account_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "drive_file_id": {
+                    "type": "string"
+                },
+                "icon_link": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "md5_checksum": {
+                    "type": "string"
+                },
+                "mime_type": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "size": {
+                    "description": "bytes",
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "web_view_link": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.FileUploadResponseDTO": {
+            "type": "object",
+            "properties": {
+                "account_email": {
+                    "type": "string",
+                    "example": "user@gmail.com"
+                },
+                "account_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "drive_file_id": {
+                    "type": "string",
+                    "example": "1a2b3c4d..."
+                },
+                "file_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "mime_type": {
+                    "type": "string",
+                    "example": "application/pdf"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "document.pdf"
+                },
+                "size": {
+                    "type": "integer",
+                    "example": 1048576
+                },
+                "size_human": {
+                    "type": "string",
+                    "example": "1.00 MB"
+                },
+                "web_view_link": {
+                    "type": "string",
+                    "example": "https://drive.google.com/file/d/..."
+                }
+            }
+        },
+        "model.StorageOverviewDTO": {
+            "type": "object",
+            "properties": {
+                "account_count": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "accounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.AccountSimpleDTO"
+                    }
+                },
+                "total_free_bytes": {
+                    "type": "integer",
+                    "example": 21474836480
+                },
+                "total_free_human": {
+                    "type": "string",
+                    "example": "20.00 GB"
+                },
+                "total_limit_bytes": {
+                    "type": "integer",
+                    "example": 32212254720
+                },
+                "total_limit_human": {
+                    "type": "string",
+                    "example": "30.00 GB"
+                },
+                "total_usage_bytes": {
+                    "type": "integer",
+                    "example": 10737418240
+                },
+                "total_usage_human": {
+                    "type": "string",
+                    "example": "10.00 GB"
+                },
+                "usage_percentage": {
+                    "type": "number",
+                    "example": 33.33
+                }
+            }
+        }
+    }
+}

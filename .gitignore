@@ -1,0 +1,32 @@
+# Binaries and executables
+**/server
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Environment variables & secrets (CRITICAL)
+**/.env
+**/.env.local
+**/.env.*.local
+*.env
+
+# SQLite Database
+**/*.db
+**/*.db-journal
+**/*.db-wal
+**/*.db-shm
+
+# IDE & OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Frontend dependencies and builds
+**/node_modules/
+**/dist/
+**/build/
+.npm/
