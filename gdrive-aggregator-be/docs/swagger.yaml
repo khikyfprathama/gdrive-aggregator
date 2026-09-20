@@ -188,7 +188,6 @@ definitions:
         example: 33.33
         type: number
     type: object
-host: localhost:8080
 info:
   contact:
     name: Google Drive Aggregator Support

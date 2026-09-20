@@ -23,7 +23,6 @@ import (
 // @description     REST API untuk mengagregasi beberapa akun Google Drive ke dalam satu storage pool terpusat.
 // @description     Mendukung smart allocation (otomatis pilih akun dengan sisa kuota terbesar), streaming download, dan manajemen multi-akun.
 // @contact.name    Google Drive Aggregator Support
-// @host            localhost:8080
 // @BasePath        /
 
 func main() {
