@@ -91,8 +91,125 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
         </button>
       </div>
 
-      {/* Accounts Table Neo-Brutalist */}
-      <div className="overflow-x-auto">
+      {/* Mobile Cards View (< md) */}
+      <div className="md:hidden divide-y-2 divide-zinc-800">
+        {accounts.length === 0 ? (
+          <div className="p-8 text-center text-zinc-400">
+            <p className="text-sm font-bold">Belum ada akun Google Drive terhubung.</p>
+            <button
+              onClick={handleAddAccount}
+              className="mt-3 px-4 py-2 bg-cyan-400 text-black font-black uppercase text-xs rounded-lg border-2 border-black shadow-[3px_3px_0px_0px_#000]"
+            >
+              Hubungkan Drive Sekarang
+            </button>
+          </div>
+        ) : (
+          accounts.map((acc) => {
+            const capacity = acc.storage_limit || 0;
+            const used = acc.storage_usage || 0;
+            const available = Math.max(0, capacity - used);
+            const usagePct =
+              acc.usage_percent ??
+              (capacity > 0 ? (used / capacity) * 100 : 0);
+
+            const isHigh = usagePct > 85;
+            const isMid = usagePct > 60;
+
+            return (
+              <div key={acc.id} className="p-4 space-y-3 bg-zinc-900/60">
+                {/* Account info row */}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    {acc.avatar_url ? (
+                      <img
+                        src={acc.avatar_url}
+                        alt={acc.display_name}
+                        className="w-10 h-10 rounded-lg object-cover border-2 border-zinc-600 shadow-[2px_2px_0px_0px_#000] shrink-0"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center text-zinc-300 shadow-[2px_2px_0px_0px_#000] shrink-0">
+                        <User className="w-5 h-5" />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-bold text-white text-xs tracking-tight truncate">
+                          {acc.display_name || 'Google Account'}
+                        </p>
+                        <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-emerald-400/10 text-emerald-400 border border-emerald-500/30 shrink-0">
+                          Active
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-mono text-zinc-400 truncate">{acc.email}</p>
+                    </div>
+                  </div>
+
+                  {/* Quick Sync & Delete icons */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={() => handleSync(acc)}
+                      disabled={syncingId === acc.id}
+                      className="p-2 text-zinc-300 hover:text-white bg-zinc-800 border-2 border-zinc-700 rounded-lg shadow-[2px_2px_0px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition disabled:opacity-50"
+                      title="Sync kuota"
+                    >
+                      <RefreshCw
+                        className={`w-3.5 h-3.5 ${syncingId === acc.id ? 'animate-spin text-cyan-400' : ''}`}
+                      />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(acc)}
+                      disabled={deletingId === acc.id}
+                      className="p-2 text-rose-400 hover:text-rose-300 bg-rose-500/10 border-2 border-rose-500/40 rounded-lg shadow-[2px_2px_0px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition disabled:opacity-50"
+                      title="Putuskan akun"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Storage Meter Bar */}
+                <div className="space-y-1.5">
+                  <div className="w-full h-3 bg-zinc-950 border-2 border-zinc-700 rounded-sm p-0.5 overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-300 rounded-[1px] ${
+                        isHigh ? 'bg-rose-500' : isMid ? 'bg-amber-400' : 'bg-emerald-400'
+                      }`}
+                      style={{ width: `${Math.min(Math.max(usagePct, 2), 100)}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between items-center text-[10px] font-mono font-bold">
+                    <span className={isHigh ? 'text-rose-400' : isMid ? 'text-amber-400' : 'text-emerald-400'}>
+                      {usagePct.toFixed(1)}% Terpakai
+                    </span>
+                    <span className="text-zinc-400">
+                      {formatBytes(used)} / {formatBytes(capacity)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Storage breakdown pills */}
+                <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
+                  <div className="bg-zinc-950 p-1.5 rounded border border-zinc-800">
+                    <span className="text-[10px] text-zinc-500 block uppercase">Total</span>
+                    <span className="font-bold text-zinc-200">{formatBytes(capacity)}</span>
+                  </div>
+                  <div className="bg-zinc-950 p-1.5 rounded border border-zinc-800">
+                    <span className="text-[10px] text-zinc-500 block uppercase">Used</span>
+                    <span className="font-bold text-zinc-300">{formatBytes(used)}</span>
+                  </div>
+                  <div className="bg-zinc-950 p-1.5 rounded border border-zinc-800">
+                    <span className="text-[10px] text-zinc-500 block uppercase">Free</span>
+                    <span className="font-bold text-emerald-400">{formatBytes(available)}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Desktop Accounts Table (hidden on mobile < md) */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead className="bg-zinc-950 text-zinc-400 font-mono font-bold border-b-2 border-zinc-700 uppercase tracking-wider text-[11px]">
             <tr>

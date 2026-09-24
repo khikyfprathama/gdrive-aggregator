@@ -3,6 +3,7 @@
 // Source: https://github.com/khikyfprathama/gdrive-aggregator
 import { useState, useEffect, useCallback } from 'react';
 
+import { Navbar } from './components/Navbar';
 import { StorageHeader } from './components/StorageHeader';
 import { FileBrowser } from './components/FileBrowser';
 import { AccountsManager } from './components/AccountsManager';
@@ -11,7 +12,6 @@ import { SettingsDialog } from './components/SettingsDialog';
 import { Toast, type ToastMessage } from './components/Toast';
 import { apiService, getBaseURL } from './services/api';
 import type { StorageOverview, Account, FileRecord } from './types';
-import { Files, HardDrive, UploadCloud, RefreshCw, Settings } from 'lucide-react';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<'files' | 'drives'>('files');
@@ -68,7 +68,7 @@ export function App() {
       });
       setFiles(filesData.data || []);
       setTotalFiles(filesData.total || 0);
-    } catch (err: any) {
+    } catch {
       setIsOnline(false);
       showToast('Cannot connect to backend server. Check connection.', 'error');
     } finally {
@@ -112,87 +112,22 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-cyan-400 selection:text-black">
-      {/* Top Application Bar Neo-Brutalist */}
-      <header className="border-b-2 border-zinc-800 bg-zinc-950 sticky top-0 z-30 shadow-[0_4px_0px_0px_#000000]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-15 flex items-center justify-between">
-          {/* Logo & Navigation Tabs */}
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2.5">
-              <img src="/favicon.svg" alt="GDrive Aggregator" className="w-8 h-8 rounded-lg border-2 border-black shadow-[2px_2px_0px_0px_#000]" />
-              <span className="font-black text-sm uppercase tracking-wider text-white font-mono">Drive Aggregator</span>
-            </div>
-
-            {/* Segmented Tab Switcher Neo-Brutalist */}
-            <nav className="flex items-center bg-zinc-900 border-2 border-zinc-700 rounded-lg p-1 text-xs gap-1 shadow-[2px_2px_0px_0px_#000]">
-              <button
-                onClick={() => setActiveTab('files')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-black tracking-wide uppercase transition ${
-                  activeTab === 'files'
-                    ? 'bg-cyan-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]'
-                    : 'text-zinc-400 hover:text-zinc-200 border-2 border-transparent'
-                }`}
-              >
-                <Files className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>Files</span>
-                {totalFiles > 0 && (
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-black border ${
-                    activeTab === 'files' ? 'bg-black text-cyan-400 border-black' : 'bg-zinc-800 text-zinc-300 border-zinc-700'
-                  }`}>
-                    {totalFiles}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => setActiveTab('drives')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-black tracking-wide uppercase transition ${
-                  activeTab === 'drives'
-                    ? 'bg-cyan-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]'
-                    : 'text-zinc-400 hover:text-zinc-200 border-2 border-transparent'
-                }`}
-              >
-                <HardDrive className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>Connected Drives</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-black border ${
-                  activeTab === 'drives' ? 'bg-black text-cyan-400 border-black' : 'bg-zinc-800 text-zinc-300 border-zinc-700'
-                }`}>
-                  {accounts.length}
-                </span>
-              </button>
-            </nav>
-          </div>
-
-          {/* Right Actions Neo-Brutalist */}
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => handleOpenUpload()}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-black uppercase tracking-wider rounded-lg border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
-            >
-              <UploadCloud className="w-4 h-4 stroke-[3]" />
-              <span>Upload</span>
-            </button>
-
-            <button
-              onClick={fetchDashboardData}
-              disabled={loading}
-              className="p-2 text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-750 border-2 border-zinc-700 rounded-lg shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50"
-              title="Refresh"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-cyan-400' : ''}`} />
-            </button>
-
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="p-2 text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-750 border-2 border-zinc-700 rounded-lg shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
-              title="Server Settings"
-            >
-              <Settings className="w-3.5 h-3.5 stroke-[2.5]" />
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* Top Application Bar with Modern Glassmorphism & Neo-Brutalist accents */}
+      <Navbar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        totalFiles={totalFiles}
+        accountsCount={accounts.length}
+        isOnline={isOnline}
+        loading={loading}
+        onRefresh={fetchDashboardData}
+        onOpenUpload={() => handleOpenUpload()}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        serverUrl={getBaseURL()}
+      />
 
       {/* Main Content Workspace */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 pb-24 md:pb-8 space-y-4 sm:space-y-6">
         {/* Compact Storage Overview Header */}
         <StorageHeader
           overview={overview}
@@ -250,8 +185,8 @@ export function App() {
       </main>
 
       {/* Footer Status Line */}
-      <footer className="border-t border-zinc-900 px-6 py-3 text-xs text-zinc-500 flex justify-between items-center">
-        <span className="flex items-center gap-1.5">
+      <footer className="border-t border-zinc-900 px-4 sm:px-6 py-4 text-xs text-zinc-500 flex flex-col sm:flex-row justify-between items-center gap-2 mb-16 md:mb-0">
+        <span className="flex items-center gap-1.5 text-center sm:text-left">
           <span>Drive Aggregator</span>
           <span className="text-zinc-700">•</span>
           <span>Pure Go · SQLite · React</span>

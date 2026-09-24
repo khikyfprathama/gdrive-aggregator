@@ -385,12 +385,12 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
       }`}
     >
       {/* Top Controls Toolbar Neo-Brutalist */}
-      <div className="p-4 border-b-2 border-zinc-700 bg-zinc-950 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div className="p-3 sm:p-4 border-b-2 border-zinc-700 bg-zinc-950 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         {/* Left: Search & Type Filters */}
-        <div className="flex flex-wrap items-center gap-2.5 flex-1">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 flex-1 min-w-0">
           {/* Search Box */}
-          <div className="relative flex-1 min-w-[200px] max-w-xs">
-            <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder="Cari file atau folder..."
@@ -409,32 +409,34 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             )}
           </div>
 
-          {/* Quick Type Filter Pills Neo-Brutalist */}
-          <div className="inline-flex bg-zinc-900 border-2 border-zinc-700 rounded-lg p-1 text-xs gap-1 shadow-[2px_2px_0px_0px_#000]">
-            {(['all', 'folders', 'docs', 'media', 'archives', 'code'] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTypeFilter(t)}
-                className={`px-2.5 py-1 rounded font-black uppercase text-[10px] tracking-wider transition ${
-                  typeFilter === t
-                    ? 'bg-cyan-400 text-black border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000]'
-                    : 'text-zinc-400 hover:text-zinc-200 border-2 border-transparent'
-                }`}
-              >
-                {t}
-              </button>
-            ))}
+          {/* Quick Type Filter Pills - Horizontally scrollable on mobile */}
+          <div className="overflow-x-auto no-scrollbar py-0.5 max-w-full">
+            <div className="inline-flex bg-zinc-900 border-2 border-zinc-700 rounded-lg p-1 text-xs gap-1 shadow-[2px_2px_0px_0px_#000] shrink-0">
+              {(['all', 'folders', 'docs', 'media', 'archives', 'code'] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTypeFilter(t)}
+                  className={`px-2 sm:px-2.5 py-1 rounded font-black uppercase text-[10px] tracking-wider transition shrink-0 ${
+                    typeFilter === t
+                      ? 'bg-cyan-400 text-black border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000]'
+                      : 'text-zinc-400 hover:text-zinc-200 border-2 border-transparent'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Right: Drive Filter, View Mode, Sync, and Upload */}
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <div className="flex items-center gap-1.5 bg-zinc-900 border-2 border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs shadow-[2px_2px_0px_0px_#000]">
-            <Filter className="w-3.5 h-3.5 text-cyan-400" />
+        <div className="flex flex-wrap items-center gap-2 justify-between sm:justify-start md:justify-end shrink-0">
+          <div className="flex items-center gap-1.5 bg-zinc-900 border-2 border-zinc-700 rounded-lg px-2 sm:px-2.5 py-1.5 text-xs shadow-[2px_2px_0px_0px_#000] max-w-[180px] sm:max-w-none">
+            <Filter className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
             <select
               value={filterAccountId}
               onChange={(e) => setFilterAccountId(Number(e.target.value))}
-              className="bg-transparent text-xs font-mono font-bold text-zinc-200 focus:outline-none pr-1"
+              className="bg-transparent text-xs font-mono font-bold text-zinc-200 focus:outline-none pr-1 max-w-[120px] sm:max-w-[180px] truncate"
             >
               <option value={0} className="bg-zinc-900 text-white">Semua Akun ({accounts.length})</option>
               {accounts.map((acc) => (
@@ -470,11 +472,12 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
           <button
             onClick={handleSyncFiles}
             disabled={isSyncing || loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-750 text-zinc-200 rounded-lg text-xs font-black uppercase tracking-wider transition border-2 border-zinc-700 shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-zinc-800 hover:bg-zinc-750 text-zinc-200 rounded-lg text-xs font-black uppercase tracking-wider transition border-2 border-zinc-700 shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50"
             title="Scan & sinkronisasi semua file dan folder dari Google Drive"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-cyan-400' : 'text-zinc-400'}`} />
-            <span>{isSyncing ? 'Syncing...' : 'Sync dari Drive'}</span>
+            <span className="hidden sm:inline">{isSyncing ? 'Syncing...' : 'Sync dari Drive'}</span>
+            <span className="sm:hidden">{isSyncing ? 'Sync...' : 'Sync'}</span>
           </button>
 
           <button
@@ -488,7 +491,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 
           <button
             onClick={() => onOpenUpload()}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-cyan-400 hover:bg-cyan-300 text-black rounded-lg text-xs font-black uppercase tracking-wider transition border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+            className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 bg-cyan-400 hover:bg-cyan-300 text-black rounded-lg text-xs font-black uppercase tracking-wider transition border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
           >
             <UploadCloud className="w-4 h-4 stroke-[3]" />
             <span>Upload</span>
@@ -497,17 +500,17 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
       </div>
 
       {/* Breadcrumbs Navigation Bar Neo-Brutalist */}
-      <div className="px-4 py-2.5 bg-zinc-950/90 border-b-2 border-zinc-700 flex items-center justify-between gap-3 text-xs font-mono">
-        <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
+      <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-zinc-950/90 border-b-2 border-zinc-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs font-mono">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 w-full sm:w-auto">
           <button
             onClick={() => onNavigateBreadcrumb(-1)}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition border-2 ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition border-2 shrink-0 ${
               folderTrail.length === 0
                 ? 'text-black font-black bg-cyan-400 border-black shadow-[2px_2px_0px_0px_#000]'
                 : 'text-zinc-300 bg-zinc-900 border-zinc-750 hover:border-zinc-600 shadow-[1.5px_1.5px_0px_0px_#000]'
             }`}
           >
-            <HardDrive className="w-3.5 h-3.5" />
+            <HardDrive className="w-3.5 h-3.5 shrink-0" />
             <span>Root / Semua</span>
           </button>
 
@@ -516,7 +519,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
               <ChevronRight className="w-3.5 h-3.5 text-zinc-500 shrink-0 stroke-[2.5]" />
               <button
                 onClick={() => onNavigateBreadcrumb(idx)}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition truncate max-w-[170px] border-2 ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition truncate max-w-[140px] sm:max-w-[170px] border-2 shrink-0 ${
                   idx === folderTrail.length - 1
                     ? 'text-black font-black bg-amber-400 border-black shadow-[2px_2px_0px_0px_#000]'
                     : 'text-zinc-300 bg-zinc-900 border-zinc-750 hover:border-zinc-600 shadow-[1.5px_1.5px_0px_0px_#000]'
@@ -532,52 +535,55 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 
         {/* Folder Quick Actions & Up one level Neo-Brutalist */}
         {folderTrail.length > 0 && (
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[11px] text-zinc-300 bg-zinc-900 border-2 border-zinc-700 px-2.5 py-0.5 rounded font-mono font-bold shadow-[1.5px_1.5px_0px_0px_#000]">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-zinc-800 justify-between sm:justify-end w-full sm:w-auto">
+            <span className="text-[10px] sm:text-[11px] text-zinc-300 bg-zinc-900 border-2 border-zinc-700 px-2 sm:px-2.5 py-0.5 rounded font-mono font-bold shadow-[1.5px_1.5px_0px_0px_#000]">
               {totalFiles} item
             </span>
 
-            {/* Sync Isi Folder ini dari Google Drive */}
-            <button
-              onClick={handleSyncCurrentFolder}
-              disabled={isSyncingFolder || loading}
-              className="flex items-center gap-1 px-2.5 py-1 bg-emerald-400 hover:bg-emerald-300 text-black border-2 border-black rounded text-[11px] font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50"
-              title="Pindai ulang seluruh file di folder ini dari Google Drive (termasuk file bersama/shared)"
-            >
-              <RefreshCw className={`w-3 h-3 stroke-[2.5] ${isSyncingFolder ? 'animate-spin' : ''}`} />
-              <span>{isSyncingFolder ? 'Memindai...' : 'Sync Isi Folder'}</span>
-            </button>
-
-            {/* Quick Button: Muat Semua jika belum mode semua dan total item lebih banyak dari pageSize */}
-            {totalFiles > pageSize && pageSize !== -1 && (
+            <div className="flex items-center gap-1.5">
+              {/* Sync Isi Folder ini dari Google Drive */}
               <button
-                onClick={() => onPageSizeChange(-1)}
-                className="flex items-center gap-1 px-2.5 py-1 bg-cyan-400 hover:bg-cyan-300 text-black border-2 border-black rounded text-[11px] font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
-                title="Tampilkan seluruh file dalam folder ini sekaligus"
+                onClick={handleSyncCurrentFolder}
+                disabled={isSyncingFolder || loading}
+                className="flex items-center gap-1 px-2 sm:px-2.5 py-1 bg-emerald-400 hover:bg-emerald-300 text-black border-2 border-black rounded text-[10px] sm:text-[11px] font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50"
+                title="Pindai ulang seluruh file di folder ini dari Google Drive"
               >
-                <Eye className="w-3 h-3 stroke-[2.5]" />
-                <span>Muat Semua ({totalFiles})</span>
+                <RefreshCw className={`w-3 h-3 stroke-[2.5] ${isSyncingFolder ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">{isSyncingFolder ? 'Memindai...' : 'Sync Isi Folder'}</span>
+                <span className="sm:hidden">{isSyncingFolder ? 'Sync...' : 'Sync Folder'}</span>
               </button>
-            )}
 
-            {pageSize === -1 && totalFiles > 20 && (
+              {/* Quick Button: Muat Semua jika belum mode semua dan total item lebih banyak dari pageSize */}
+              {totalFiles > pageSize && pageSize !== -1 && (
+                <button
+                  onClick={() => onPageSizeChange(-1)}
+                  className="flex items-center gap-1 px-2 sm:px-2.5 py-1 bg-cyan-400 hover:bg-cyan-300 text-black border-2 border-black rounded text-[10px] sm:text-[11px] font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                  title="Tampilkan seluruh file dalam folder ini sekaligus"
+                >
+                  <Eye className="w-3 h-3 stroke-[2.5]" />
+                  <span>Semua ({totalFiles})</span>
+                </button>
+              )}
+
+              {pageSize === -1 && totalFiles > 20 && (
+                <button
+                  onClick={() => onPageSizeChange(20)}
+                  className="flex items-center gap-1 px-2 sm:px-2.5 py-1 bg-zinc-800 hover:bg-zinc-750 text-zinc-200 border-2 border-zinc-700 rounded text-[10px] sm:text-[11px] font-bold shadow-[2px_2px_0px_0px_#000] transition"
+                  title="Bagi menjadi 20 file per halaman"
+                >
+                  <span>20/hlm</span>
+                </button>
+              )}
+
               <button
-                onClick={() => onPageSizeChange(20)}
-                className="flex items-center gap-1 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-750 text-zinc-200 border-2 border-zinc-700 rounded text-[11px] font-bold shadow-[2px_2px_0px_0px_#000] transition"
-                title="Bagi menjadi 20 file per halaman"
+                onClick={() => onNavigateBreadcrumb(folderTrail.length - 2)}
+                className="flex items-center gap-1 px-2 sm:px-2.5 py-1 bg-zinc-800 hover:bg-zinc-750 text-zinc-200 border-2 border-zinc-700 rounded text-[10px] sm:text-[11px] font-bold shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                title="Kembali ke folder sebelumnya"
               >
-                <span>Bagi 20/hlm</span>
+                <CornerLeftUp className="w-3 h-3 stroke-[2.5]" />
+                <span>Naik</span>
               </button>
-            )}
-
-            <button
-              onClick={() => onNavigateBreadcrumb(folderTrail.length - 2)}
-              className="flex items-center gap-1 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-750 text-zinc-200 border-2 border-zinc-700 rounded text-[11px] font-bold shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
-              title="Kembali ke folder sebelumnya"
-            >
-              <CornerLeftUp className="w-3 h-3 stroke-[2.5]" />
-              <span>Naik Level</span>
-            </button>
+            </div>
           </div>
         )}
       </div>
@@ -728,26 +734,36 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                             </div>
                           )}
 
-                          <div className="flex items-center gap-2 truncate font-sans">
-                            <span
-                              onClick={() => {
-                                if (isFolder) handleOpenFolder({ id: f.drive_file_id, name: f.name });
-                                else setPreviewFile(f);
-                              }}
-                              className={`truncate max-w-xs sm:max-w-md ${
-                                isFolder
-                                  ? 'text-amber-300 font-bold cursor-pointer hover:underline'
-                                  : 'text-cyan-300 font-medium cursor-pointer hover:underline'
-                              }`}
-                              title={f.name}
-                            >
-                              {f.name}
-                            </span>
-                            {isFolder && (
-                              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 shrink-0 uppercase">
-                                Folder
+                          <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-1.5 sm:gap-2 truncate font-sans">
+                              <span
+                                onClick={() => {
+                                  if (isFolder) handleOpenFolder({ id: f.drive_file_id, name: f.name });
+                                  else setPreviewFile(f);
+                                }}
+                                className={`truncate max-w-[170px] sm:max-w-xs md:max-w-md ${
+                                  isFolder
+                                    ? 'text-amber-300 font-bold cursor-pointer hover:underline'
+                                    : 'text-cyan-300 font-medium cursor-pointer hover:underline'
+                                }`}
+                                title={f.name}
+                              >
+                                {f.name}
                               </span>
-                            )}
+                              {isFolder && (
+                                <span className="text-[9px] sm:text-[10px] font-mono font-bold px-1.5 py-0.2 sm:py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40 shrink-0 uppercase">
+                                  Folder
+                                </span>
+                              )}
+                            </div>
+                            {/* Mobile subline showing Account email & size */}
+                            <div className="sm:hidden flex items-center gap-1.5 text-[10px] text-zinc-400 font-mono mt-0.5">
+                              <span>{formatFileSize(f.size, isFolder)}</span>
+                              <span>•</span>
+                              <span className="truncate max-w-[120px] text-zinc-400">
+                                {f.account_email?.split('@')[0]}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -1004,13 +1020,13 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
       )}
 
       {/* Footer & Pagination Controls Neo-Brutalist */}
-      <div className="px-4 py-3.5 border-t-2 border-zinc-700 bg-zinc-950 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-300 font-mono">
+      <div className="px-3 sm:px-4 py-3 sm:py-3.5 border-t-2 border-zinc-700 bg-zinc-950 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-300 font-mono">
         {/* Left: Range and items per page */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between sm:justify-start w-full sm:w-auto gap-3">
           <span>
             {isAllPages ? (
               <>
-                Total <span className="font-black text-emerald-400">{totalFiles}</span> file/folder
+                Total <span className="font-black text-emerald-400">{totalFiles}</span> item
               </>
             ) : (
               <>
@@ -1020,7 +1036,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
           </span>
 
           <div className="flex items-center gap-1.5 pl-3 border-l-2 border-zinc-700">
-            <span className="text-[11px] text-zinc-400 font-bold uppercase">Per hlm:</span>
+            <span className="text-[10px] sm:text-[11px] text-zinc-400 font-bold uppercase">Per hlm:</span>
             <select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
@@ -1036,7 +1052,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
           </div>
         </div>
 
-        {/* Right: Pagination buttons or All Items Status */}
+        {/* Right: Pagination buttons */}
         {isAllPages ? (
           <div className="flex items-center gap-2">
             <span className="text-[11px] text-zinc-400 italic">
@@ -1053,102 +1069,128 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             )}
           </div>
         ) : (
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => onPageChange(1)}
-              disabled={page === 1 || loading}
-              className="px-2.5 py-1 bg-zinc-900 border-2 border-zinc-700 rounded text-xs font-bold text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
-              title="Halaman Pertama"
-            >
-              &laquo;
-            </button>
-            <button
-              onClick={() => onPageChange(page - 1)}
-              disabled={page === 1 || loading}
-              className="px-3 py-1 bg-zinc-900 border-2 border-zinc-700 rounded text-xs font-bold text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
-              title="Halaman Sebelumnya"
-            >
-              &lsaquo; Prev
-            </button>
-
-            <div className="flex items-center gap-1 mx-1">
-              {getPageNumbers().map((p, idx) =>
-                typeof p === 'number' ? (
-                  <button
-                    key={idx}
-                    onClick={() => onPageChange(p)}
-                    disabled={loading}
-                    className={`w-7 h-7 rounded text-xs font-black transition-all ${
-                      page === p
-                        ? 'bg-cyan-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]'
-                        : 'bg-zinc-900 border-2 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ) : (
-                  <span key={idx} className="px-1 text-zinc-500 font-bold">
-                    ...
-                  </span>
-                )
-              )}
+          <>
+            {/* Mobile Compact Pagination (< sm) */}
+            <div className="flex sm:hidden items-center justify-between w-full pt-2 border-t border-zinc-800/80 gap-2">
+              <button
+                onClick={() => onPageChange(page - 1)}
+                disabled={page === 1 || loading}
+                className="px-3 py-1 bg-zinc-900 border-2 border-zinc-700 rounded text-xs font-bold text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_#000]"
+              >
+                &lsaquo; Prev
+              </button>
+              <span className="font-bold text-xs text-zinc-300">
+                Hal. <span className="text-cyan-400">{page}</span> / {totalPages}
+              </span>
+              <button
+                onClick={() => onPageChange(page + 1)}
+                disabled={page === totalPages || loading}
+                className="px-3 py-1 bg-zinc-900 border-2 border-zinc-700 rounded text-xs font-bold text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_#000]"
+              >
+                Next &rsaquo;
+              </button>
             </div>
 
-            <button
-              onClick={() => onPageChange(page + 1)}
-              disabled={page === totalPages || loading}
-              className="px-3 py-1 bg-zinc-900 border-2 border-zinc-700 rounded text-xs font-bold text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
-              title="Halaman Selanjutnya"
-            >
-              Next &rsaquo;
-            </button>
-            <button
-              onClick={() => onPageChange(totalPages)}
-              disabled={page === totalPages || loading}
-              className="px-2.5 py-1 bg-zinc-900 border-2 border-zinc-700 rounded text-xs font-bold text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
-              title="Halaman Terakhir"
-            >
-              &raquo;
-            </button>
-          </div>
+            {/* Desktop Full Pagination (>= sm) */}
+            <div className="hidden sm:flex items-center gap-1">
+              <button
+                onClick={() => onPageChange(1)}
+                disabled={page === 1 || loading}
+                className="px-2.5 py-1 bg-zinc-900 border-2 border-zinc-700 rounded text-xs font-bold text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                title="Halaman Pertama"
+              >
+                &laquo;
+              </button>
+              <button
+                onClick={() => onPageChange(page - 1)}
+                disabled={page === 1 || loading}
+                className="px-3 py-1 bg-zinc-900 border-2 border-zinc-700 rounded text-xs font-bold text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                title="Halaman Sebelumnya"
+              >
+                &lsaquo; Prev
+              </button>
+
+              <div className="flex items-center gap-1 mx-1">
+                {getPageNumbers().map((p, idx) =>
+                  typeof p === 'number' ? (
+                    <button
+                      key={idx}
+                      onClick={() => onPageChange(p)}
+                      disabled={loading}
+                      className={`w-7 h-7 rounded text-xs font-black transition-all ${
+                        page === p
+                          ? 'bg-cyan-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]'
+                          : 'bg-zinc-900 border-2 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ) : (
+                    <span key={idx} className="px-1 text-zinc-500 font-bold">
+                      ...
+                    </span>
+                  )
+                )}
+              </div>
+
+              <button
+                onClick={() => onPageChange(page + 1)}
+                disabled={page === totalPages || loading}
+                className="px-3 py-1 bg-zinc-900 border-2 border-zinc-700 rounded text-xs font-bold text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                title="Halaman Selanjutnya"
+              >
+                Next &rsaquo;
+              </button>
+              <button
+                onClick={() => onPageChange(totalPages)}
+                disabled={page === totalPages || loading}
+                className="px-2.5 py-1 bg-zinc-900 border-2 border-zinc-700 rounded text-xs font-bold text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                title="Halaman Terakhir"
+              >
+                &raquo;
+              </button>
+            </div>
+          </>
         )}
       </div>
 
       {/* Floating Multi-Select Batch Action Bar Neo-Brutalist */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-900 border-2 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl px-4 py-2.5 flex items-center gap-3 text-xs font-mono animate-in fade-in slide-in-from-bottom-3 duration-200">
-          <div className="flex items-center gap-2 pr-3 border-r-2 border-zinc-750">
+        <div className="fixed bottom-20 md:bottom-6 left-3 right-3 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-40 bg-zinc-900 border-2 border-black shadow-[6px_6px_0px_0px_#000] rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between sm:justify-start gap-2 sm:gap-3 text-xs font-mono animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div className="flex items-center gap-1.5 sm:gap-2 pr-2 sm:pr-3 border-r-2 border-zinc-750 shrink-0">
             <span className="w-5 h-5 rounded bg-cyan-400 text-black border border-black flex items-center justify-center font-black text-[11px] shadow-[1px_1px_0px_0px_#000]">
               {selectedIds.size}
             </span>
-            <span className="text-zinc-200 font-bold uppercase tracking-wider">dipilih</span>
+            <span className="text-zinc-200 font-bold uppercase tracking-wider hidden xs:inline">dipilih</span>
           </div>
 
-          <button
-            onClick={handleBatchDownload}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-400 hover:bg-emerald-300 text-black border-2 border-black rounded-lg font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
-            title="Unduh file yang dipilih"
-          >
-            <Download className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>Unduh ({selectedIds.size})</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleBatchDownload}
+              className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 bg-emerald-400 hover:bg-emerald-300 text-black border-2 border-black rounded-lg font-black uppercase tracking-wider text-[11px] sm:text-xs shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+              title="Unduh file yang dipilih"
+            >
+              <Download className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Unduh ({selectedIds.size})</span>
+            </button>
 
-          <button
-            onClick={handleBatchDelete}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-400 text-white border-2 border-black rounded-lg font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
-            title="Hapus permanen file/folder yang dipilih"
-          >
-            <Trash2 className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>Hapus ({selectedIds.size})</span>
-          </button>
+            <button
+              onClick={handleBatchDelete}
+              className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 bg-rose-500 hover:bg-rose-400 text-white border-2 border-black rounded-lg font-black uppercase tracking-wider text-[11px] sm:text-xs shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+              title="Hapus permanen file/folder yang dipilih"
+            >
+              <Trash2 className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Hapus ({selectedIds.size})</span>
+            </button>
 
-          <button
-            onClick={() => setSelectedIds(new Set())}
-            className="p-1.5 text-zinc-300 hover:text-white rounded-lg bg-zinc-800 hover:bg-zinc-700 border-2 border-zinc-700 shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
-            title="Batalkan Pilihan"
-          >
-            <X className="w-3.5 h-3.5 stroke-[2.5]" />
-          </button>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="p-1.5 text-zinc-300 hover:text-white rounded-lg bg-zinc-800 hover:bg-zinc-700 border-2 border-zinc-700 shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all shrink-0"
+              title="Batalkan Pilihan"
+            >
+              <X className="w-3.5 h-3.5 stroke-[2.5]" />
+            </button>
+          </div>
         </div>
       )}
 

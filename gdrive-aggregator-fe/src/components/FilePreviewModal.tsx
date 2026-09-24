@@ -158,23 +158,23 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
 
       <div className="relative z-10 max-w-5xl w-full bg-zinc-900 border-2 border-zinc-750 rounded-xl overflow-hidden shadow-[8px_8px_0px_0px_#000] flex flex-col max-h-[92vh] font-mono">
         {/* Header Bar */}
-        <div className="px-4 py-3 border-b-2 border-zinc-700 bg-zinc-950 flex items-center justify-between gap-3 shrink-0">
-          <div className="flex items-center gap-2.5 truncate">
-            <span className="font-bold text-xs text-white truncate max-w-md" title={file.name}>
+        <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b-2 border-zinc-700 bg-zinc-950 flex items-center justify-between gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 truncate min-w-0">
+            <span className="font-bold text-xs text-white truncate max-w-[130px] sm:max-w-xs md:max-w-md" title={file.name}>
               {file.name}
             </span>
-            <span className="text-[11px] text-zinc-400 font-bold shrink-0">
+            <span className="text-[10px] sm:text-[11px] text-zinc-400 font-bold shrink-0">
               ({formatFileSize(file.size)})
             </span>
             {/* Category badge */}
             <span
-              className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] shrink-0 ${badge.color}`}
+              className={`text-[9px] sm:text-[10px] font-black uppercase px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded border border-black sm:border-2 shadow-[1px_1px_0px_0px_#000] shrink-0 ${badge.color}`}
             >
               {badge.label}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             {/* Toggle full quality button (Images only) */}
             {isImg && !showFull && (
               <button
@@ -183,11 +183,11 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
                   setLoading(true);
                   setHasError(false);
                 }}
-                className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-black uppercase tracking-wider text-black bg-cyan-400 hover:bg-cyan-300 rounded border-2 border-black shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                className="flex items-center gap-1 px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-black bg-cyan-400 hover:bg-cyan-300 rounded border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-[2px] active:translate-y-[2px] transition-all"
                 title="Muat gambar kualitas penuh (resolusi asli)"
               >
                 <ZoomIn className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>Kualitas Penuh</span>
+                <span className="hidden sm:inline">Kualitas Penuh</span>
               </button>
             )}
 
