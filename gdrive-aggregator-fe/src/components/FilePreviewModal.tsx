@@ -152,29 +152,41 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
   const badge = getCategoryBadge();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-150">
       {/* Click outside to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
-      <div className="relative z-10 max-w-5xl w-full bg-zinc-900 border-2 border-zinc-750 rounded-xl overflow-hidden shadow-[8px_8px_0px_0px_#000] flex flex-col max-h-[92vh] font-mono">
+      <div className="relative z-10 max-w-5xl w-full bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl shadow-black/80 flex flex-col max-h-[92vh] font-sans">
         {/* Header Bar */}
-        <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b-2 border-zinc-700 bg-zinc-950 flex items-center justify-between gap-2 sm:gap-3 shrink-0">
-          <div className="flex items-center gap-1.5 sm:gap-2.5 truncate min-w-0">
-            <span className="font-bold text-xs text-white truncate max-w-[130px] sm:max-w-xs md:max-w-md" title={file.name}>
+        <div className="px-4 py-3 border-b border-zinc-800/80 bg-zinc-950/70 flex items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 truncate min-w-0">
+            <span className="font-semibold text-xs sm:text-sm text-white truncate max-w-[150px] sm:max-w-xs md:max-w-md" title={file.name}>
               {file.name}
             </span>
-            <span className="text-[10px] sm:text-[11px] text-zinc-400 font-bold shrink-0">
+            <span className="text-[11px] text-zinc-400 font-mono shrink-0">
               ({formatFileSize(file.size)})
             </span>
             {/* Category badge */}
             <span
-              className={`text-[9px] sm:text-[10px] font-black uppercase px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded border border-black sm:border-2 shadow-[1px_1px_0px_0px_#000] shrink-0 ${badge.color}`}
+              className={`text-[10px] font-medium px-2 py-0.5 rounded-full border shrink-0 ${
+                isImg
+                  ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30'
+                  : isVideo
+                  ? 'bg-purple-500/10 text-purple-300 border-purple-500/30'
+                  : isAudio
+                  ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                  : isPdf
+                  ? 'bg-rose-500/10 text-rose-300 border-rose-500/30'
+                  : isTextOrCode
+                  ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                  : 'bg-zinc-800 text-zinc-300 border-zinc-700'
+              }`}
             >
               {badge.label}
             </span>
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             {/* Toggle full quality button (Images only) */}
             {isImg && !showFull && (
               <button
@@ -183,10 +195,10 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
                   setLoading(true);
                   setHasError(false);
                 }}
-                className="flex items-center gap-1 px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-black bg-cyan-400 hover:bg-cyan-300 rounded border-2 border-black shadow-[1.5px_1.5px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-[2px] active:translate-y-[2px] transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-black bg-cyan-500 hover:bg-cyan-400 rounded-xl shadow-sm transition-all"
                 title="Muat gambar kualitas penuh (resolusi asli)"
               >
-                <ZoomIn className="w-3.5 h-3.5 stroke-[2.5]" />
+                <ZoomIn className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Kualitas Penuh</span>
               </button>
             )}
@@ -195,17 +207,17 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
             {isTextOrCode && textContent && (
               <button
                 onClick={handleCopyText}
-                className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-zinc-200 bg-zinc-800 hover:bg-zinc-750 border-2 border-zinc-700 rounded shadow-[1.5px_1.5px_0px_0px_#000] transition"
+                className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-zinc-200 bg-zinc-800 hover:bg-zinc-750 border border-zinc-700/70 rounded-xl transition"
                 title="Salin isi teks"
               >
                 {copiedText ? (
                   <>
-                    <Check className="w-3 h-3 text-emerald-400 stroke-[2.5]" />
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
                     <span className="text-emerald-400">Disalin!</span>
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3 h-3" />
+                    <Copy className="w-3.5 h-3.5" />
                     <span>Salin</span>
                   </>
                 )}
@@ -217,41 +229,41 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
               href={previewUrl}
               target="_blank"
               rel="noreferrer"
-              className="p-1.5 text-zinc-400 hover:text-white rounded border border-transparent hover:border-zinc-700 hover:bg-zinc-800 transition"
+              className="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-800/80 transition"
               title="Buka file langsung di tab baru"
             >
-              <ExternalLink className="w-4 h-4 stroke-[2.5]" />
+              <ExternalLink className="w-4 h-4" />
             </a>
 
             {/* Download */}
             <button
               onClick={() => onDownload(file)}
-              className="p-1.5 text-zinc-400 hover:text-emerald-400 rounded border border-transparent hover:border-zinc-700 hover:bg-zinc-800 transition"
+              className="p-2 text-zinc-400 hover:text-emerald-400 rounded-xl hover:bg-zinc-800/80 transition"
               title="Unduh file ini"
             >
-              <Download className="w-4 h-4 stroke-[2.5]" />
+              <Download className="w-4 h-4" />
             </button>
 
             {/* Close */}
             <button
               onClick={onClose}
-              className="p-1.5 text-zinc-400 hover:text-white rounded border border-transparent hover:border-zinc-700 hover:bg-zinc-800 transition"
+              className="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-800/80 transition"
               title="Tutup pratinjau (Esc)"
             >
-              <X className="w-4 h-4 stroke-[2.5]" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {/* Content Viewer Body */}
-        <div className="relative flex-1 min-h-[300px] max-h-[72vh] bg-zinc-950 flex items-center justify-center p-3 sm:p-5 overflow-hidden border-b-2 border-zinc-700">
+        <div className="relative flex-1 min-h-[300px] max-h-[72vh] bg-zinc-950/80 flex items-center justify-center p-3 sm:p-5 overflow-hidden border-b border-zinc-800/80">
           {/* IMAGE VIEWER */}
           {isImg && (
             <>
               {loading && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-zinc-400">
-                  <RefreshCw className="w-6 h-6 animate-spin text-cyan-400 stroke-[2.5]" />
-                  <span className="text-xs font-bold uppercase tracking-wider">
+                  <RefreshCw className="w-6 h-6 animate-spin text-cyan-400" />
+                  <span className="text-xs font-medium">
                     {showFull ? 'Memuat resolusi penuh...' : 'Memuat pratinjau gambar...'}
                   </span>
                 </div>
@@ -259,14 +271,14 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
 
               {hasError ? (
                 <div className="flex flex-col items-center justify-center gap-2 text-rose-400 p-8 text-center">
-                  <AlertCircle className="w-8 h-8 stroke-[2.5]" />
-                  <p className="text-xs font-black uppercase">Gagal memuat pratinjau gambar</p>
-                  <p className="text-[11px] text-zinc-400 font-sans max-w-xs">
+                  <AlertCircle className="w-8 h-8" />
+                  <p className="text-xs font-semibold">Gagal memuat pratinjau gambar</p>
+                  <p className="text-xs text-zinc-400 max-w-xs">
                     File gambar tidak dapat dimuat atau terjadi gangguan jaringan.
                   </p>
                   <button
                     onClick={() => onDownload(file)}
-                    className="mt-2 px-3.5 py-1.5 bg-cyan-400 hover:bg-cyan-300 text-black border-2 border-black rounded text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_#000] transition-all"
+                    className="mt-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-black rounded-xl text-xs font-semibold shadow-sm transition-all"
                   >
                     Unduh File Secara Manual
                   </button>
@@ -286,7 +298,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
                       setHasError(true);
                     }
                   }}
-                  className={`max-h-[68vh] max-w-full object-contain rounded border border-zinc-800 shadow-[4px_4px_0px_0px_#000] transition-opacity duration-200 ${
+                  className={`max-h-[68vh] max-w-full object-contain rounded-xl border border-zinc-800/80 shadow-lg transition-opacity duration-200 ${
                     loading ? 'opacity-0' : 'opacity-100'
                   }`}
                 />
@@ -302,7 +314,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
                 playsInline
                 autoPlay={false}
                 src={previewUrl}
-                className="max-h-[68vh] max-w-full rounded-lg border-2 border-zinc-700 bg-black shadow-[4px_4px_0px_0px_#000] outline-none"
+                className="max-h-[68vh] max-w-full rounded-xl border border-zinc-800 bg-black shadow-lg outline-none"
               >
                 Browser Anda tidak mendukung pemutar video HTML5. Silakan unduh file untuk memutarnya.
               </video>
@@ -311,12 +323,12 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
 
           {/* AUDIO VIEWER */}
           {isAudio && (
-            <div className="w-full max-w-md p-6 bg-zinc-900 border-2 border-zinc-700 rounded-xl shadow-[5px_5px_0px_0px_#000] flex flex-col items-center gap-4 text-center">
-              <div className="w-16 h-16 rounded-lg bg-amber-400 text-black border-2 border-black flex items-center justify-center shadow-[3px_3px_0px_0px_#000]">
-                <FileAudio className="w-8 h-8 stroke-[2.5]" />
+            <div className="w-full max-w-md p-6 bg-zinc-900/80 border border-zinc-800 rounded-2xl shadow-xl flex flex-col items-center gap-4 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+                <FileAudio className="w-8 h-8" />
               </div>
               <div>
-                <h4 className="font-bold text-sm text-white truncate max-w-xs">{file.name}</h4>
+                <h4 className="font-semibold text-sm text-white truncate max-w-xs">{file.name}</h4>
                 <p className="text-xs text-zinc-400 font-mono mt-1">{formatFileSize(file.size)}</p>
               </div>
               <audio controls src={previewUrl} className="w-full mt-2 outline-none">
@@ -331,7 +343,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
               <iframe
                 src={previewUrl}
                 title={file.name}
-                className="w-full h-[68vh] border-2 border-zinc-700 rounded-lg bg-zinc-900 shadow-[4px_4px_0px_0px_#000]"
+                className="w-full h-[68vh] border border-zinc-800 rounded-xl bg-zinc-900 shadow-lg"
               />
             </div>
           )}
@@ -341,22 +353,22 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
             <div className="w-full h-full flex flex-col">
               {textLoading ? (
                 <div className="flex-1 flex flex-col items-center justify-center gap-2 text-zinc-400">
-                  <RefreshCw className="w-6 h-6 animate-spin text-cyan-400 stroke-[2.5]" />
-                  <span className="text-xs font-bold uppercase tracking-wider">Membaca berkas teks/kode...</span>
+                  <RefreshCw className="w-6 h-6 animate-spin text-cyan-400" />
+                  <span className="text-xs font-medium">Membaca berkas teks/kode...</span>
                 </div>
               ) : hasError ? (
                 <div className="flex-1 flex flex-col items-center justify-center gap-2 text-rose-400 text-center">
-                  <AlertCircle className="w-7 h-7 stroke-[2.5]" />
-                  <p className="text-xs font-bold uppercase">Tidak dapat menampilkan isi teks</p>
+                  <AlertCircle className="w-7 h-7" />
+                  <p className="text-xs font-semibold">Tidak dapat menampilkan isi teks</p>
                   <button
                     onClick={() => onDownload(file)}
-                    className="mt-2 px-3 py-1 bg-cyan-400 text-black font-black uppercase text-xs rounded border border-black"
+                    className="mt-2 px-3 py-1.5 bg-cyan-500 text-black font-semibold text-xs rounded-xl"
                   >
                     Unduh File
                   </button>
                 </div>
               ) : (
-                <div className="flex-1 overflow-auto bg-zinc-950 border-2 border-zinc-800 rounded-lg p-4 font-mono text-xs text-zinc-200 shadow-inner">
+                <div className="flex-1 overflow-auto bg-zinc-950 border border-zinc-800/80 rounded-xl p-4 font-mono text-xs text-zinc-200">
                   <pre className="whitespace-pre-wrap font-mono leading-relaxed select-text">
                     {textContent || '(File kosong)'}
                   </pre>
@@ -367,23 +379,23 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
 
           {/* OFFICE DOCUMENTS & ARCHIVES & FALLBACK */}
           {!isImg && !isVideo && !isAudio && !isPdf && !isTextOrCode && (
-            <div className="w-full max-w-lg p-6 bg-zinc-900 border-2 border-zinc-750 rounded-xl shadow-[6px_6px_0px_0px_#000] flex flex-col items-center text-center gap-4">
-              <div className="w-16 h-16 rounded-lg bg-cyan-400 text-black border-2 border-black flex items-center justify-center shadow-[3px_3px_0px_0px_#000]">
+            <div className="w-full max-w-lg p-6 bg-zinc-900/80 border border-zinc-800 rounded-2xl shadow-xl flex flex-col items-center text-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center">
                 {isArchive ? (
-                  <FileArchive className="w-8 h-8 stroke-[2.5]" />
+                  <FileArchive className="w-8 h-8" />
                 ) : isOfficeDoc ? (
-                  <FileText className="w-8 h-8 stroke-[2.5]" />
+                  <FileText className="w-8 h-8" />
                 ) : (
-                  <File className="w-8 h-8 stroke-[2.5]" />
+                  <File className="w-8 h-8" />
                 )}
               </div>
 
               <div>
-                <h4 className="font-black text-sm text-white truncate max-w-md">{file.name}</h4>
-                <p className="text-xs text-zinc-400 font-mono mt-1">
-                  Format: <span className="text-cyan-400 font-bold uppercase">{ext || 'Berkas'}</span> &bull; {formatFileSize(file.size)}
+                <h4 className="font-semibold text-sm text-white truncate max-w-md">{file.name}</h4>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Format: <span className="text-cyan-400 font-mono uppercase">{ext || 'Berkas'}</span> &bull; {formatFileSize(file.size)}
                 </p>
-                <p className="text-xs text-zinc-400 font-sans mt-2 max-w-sm leading-relaxed">
+                <p className="text-xs text-zinc-400 mt-2 max-w-sm leading-relaxed">
                   {isOfficeDoc
                     ? 'Dokumen office dapat dilihat langsung lewat Google Drive Web Viewer atau diunduh.'
                     : isArchive
@@ -398,17 +410,17 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
                     href={file.web_view_link}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1.5 px-4 py-2 bg-zinc-800 hover:bg-zinc-750 text-white border-2 border-zinc-700 rounded-lg text-xs font-bold uppercase tracking-wider shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:shadow-none transition-all"
+                    className="flex items-center gap-1.5 px-4 py-2 bg-zinc-800 hover:bg-zinc-750 text-white border border-zinc-750 rounded-xl text-xs font-medium transition-all"
                   >
-                    <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <ExternalLink className="w-3.5 h-3.5" />
                     <span>Buka di Google Drive</span>
                   </a>
                 )}
                 <button
                   onClick={() => onDownload(file)}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-emerald-400 hover:bg-emerald-300 text-black border-2 border-black rounded-lg text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:shadow-none transition-all"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black rounded-xl text-xs font-semibold shadow-sm transition-all"
                 >
-                  <Download className="w-4 h-4 stroke-[2.5]" />
+                  <Download className="w-4 h-4" />
                   <span>Unduh File Sekarang</span>
                 </button>
               </div>
@@ -417,29 +429,29 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
         </div>
 
         {/* Footer info bar */}
-        <div className="px-4 py-2.5 bg-zinc-950 text-[11px] text-zinc-300 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div className="px-4 py-2.5 bg-zinc-950/90 text-xs text-zinc-300 flex flex-wrap items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2">
-            <span className="font-bold uppercase tracking-wider text-zinc-400">Akun Drive:</span>
-            <span className="font-mono text-cyan-300 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-700 shadow-[1px_1px_0px_0px_#000]">
+            <span className="text-zinc-400 text-xs">Akun Drive:</span>
+            <span className="font-mono text-cyan-300 bg-zinc-900 px-2 py-0.5 rounded-lg border border-zinc-800 text-[11px]">
               {file.account_email || '-'}
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="font-mono text-zinc-400">
+            <span className="font-mono text-zinc-500 text-[11px]">
               MIME: {file.mime_type || ext || 'file'}
             </span>
             {isImg && !showFull && (
-              <span className="text-cyan-400 font-bold uppercase text-[10px] tracking-wider">
+              <span className="text-cyan-400 font-medium text-[11px]">
                 ⚡ Pratinjau Cepat Aktif
               </span>
             )}
             {isVideo && (
-              <span className="text-purple-400 font-bold uppercase text-[10px] tracking-wider">
+              <span className="text-purple-400 font-medium text-[11px]">
                 🎬 Video Player Aktif
               </span>
             )}
             {isPdf && (
-              <span className="text-rose-400 font-bold uppercase text-[10px] tracking-wider">
+              <span className="text-rose-400 font-medium text-[11px]">
                 📄 PDF Viewer Aktif
               </span>
             )}

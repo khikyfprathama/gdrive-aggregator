@@ -23,21 +23,23 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-zinc-900 border-2 border-zinc-750 rounded-xl w-full max-w-sm shadow-[8px_8px_0px_0px_#000] overflow-hidden">
-        <div className="px-4 py-3.5 border-b-2 border-zinc-700 bg-zinc-950 flex items-center justify-between font-mono">
-          <div className="flex items-center gap-2 text-white text-xs font-black uppercase tracking-wider">
-            <Server className="w-4 h-4 text-cyan-400 stroke-[2.5]" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+      <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 rounded-2xl w-full max-w-sm shadow-2xl shadow-black/80 overflow-hidden font-sans">
+        <div className="px-5 py-4 border-b border-zinc-800/80 bg-zinc-950/70 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 text-white text-xs font-semibold">
+            <span className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+              <Server className="w-4 h-4" />
+            </span>
             <span>Backend Server Config</span>
           </div>
-          <button onClick={onClose} className="text-zinc-400 hover:text-white p-1 rounded hover:bg-zinc-800 transition">
-            <X className="w-3.5 h-3.5 stroke-[2.5]" />
+          <button onClick={onClose} className="text-zinc-400 hover:text-white p-1.5 rounded-xl hover:bg-zinc-800/80 transition">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSave} className="p-4 space-y-3 font-mono">
+        <form onSubmit={handleSave} className="p-5 space-y-4">
           <div>
-            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-medium text-zinc-300 mb-1.5">
               Backend API Base URL
             </label>
             <input
@@ -45,29 +47,29 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="http://192.168.18.18:8081"
-              className="w-full px-3 py-2 bg-zinc-950 border-2 border-zinc-700 rounded text-xs text-white font-mono shadow-[2px_2px_0px_0px_#000] focus:outline-none focus:border-cyan-400"
+              className="w-full px-3.5 py-2 bg-zinc-950/80 border border-zinc-800 rounded-xl text-xs text-white font-mono focus:outline-none focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/20"
               required
             />
-            <p className="text-[11px] text-zinc-400 mt-1.5 font-sans">
+            <p className="text-[11px] text-zinc-500 mt-1.5">
               Default mengarah ke IP laptop server port 8081.
             </p>
           </div>
 
           {saved && (
-            <p className="text-xs text-emerald-400 font-bold">Pengaturan disimpan. Memuat ulang...</p>
+            <p className="text-xs text-emerald-400 font-medium">Pengaturan disimpan. Memuat ulang...</p>
           )}
 
-          <div className="flex justify-end gap-2 pt-2 border-t-2 border-zinc-800">
+          <div className="flex justify-end gap-2.5 pt-2 border-t border-zinc-800/80">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 text-xs font-bold text-zinc-400 hover:text-white transition"
+              className="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-800/60 transition"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 text-xs font-black uppercase tracking-wider bg-cyan-400 hover:bg-cyan-300 text-black border-2 border-black rounded shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+              className="px-4 py-2 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black rounded-xl shadow-sm transition-all"
             >
               Simpan & Terapkan
             </button>

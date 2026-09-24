@@ -65,40 +65,40 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
   };
 
   return (
-    <div className="bg-zinc-900 border-2 border-zinc-700 rounded-xl overflow-hidden shadow-[5px_5px_0px_0px_#000000] space-y-0">
-      {/* Header Toolbar Neo-Brutalist */}
-      <div className="p-4 sm:p-5 border-b-2 border-zinc-700 bg-zinc-950 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="bg-zinc-900/60 backdrop-blur-md border border-zinc-800/80 rounded-2xl overflow-hidden shadow-xl shadow-black/20 space-y-0">
+      {/* Header Toolbar */}
+      <div className="p-4 sm:p-5 border-b border-zinc-800/80 bg-zinc-950/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-1.5 bg-cyan-400 text-black rounded border border-black shadow-[2px_2px_0px_0px_#000]">
-              <HardDrive className="w-4 h-4 stroke-[2.5]" />
+            <span className="p-1.5 bg-cyan-500/10 text-cyan-400 rounded-lg border border-cyan-500/20">
+              <HardDrive className="w-4 h-4" />
             </span>
-            <h3 className="text-sm font-black tracking-wide uppercase text-white">
+            <h3 className="text-sm font-semibold text-white">
               Connected Google Drives ({accounts.length})
             </h3>
           </div>
-          <p className="text-xs text-zinc-400 font-mono mt-1">
+          <p className="text-xs text-zinc-400 mt-1 font-sans">
             Akun Google yang digabungkan ke dalam satu Storage Pool terpusat.
           </p>
         </div>
 
         <button
           onClick={handleAddAccount}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-cyan-400 hover:bg-cyan-300 text-black border-2 border-black rounded-lg text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-black rounded-xl text-xs font-semibold shadow-sm transition-all"
         >
-          <Plus className="w-4 h-4 stroke-[3]" />
+          <Plus className="w-4 h-4" />
           <span>Connect Drive</span>
         </button>
       </div>
 
       {/* Mobile Cards View (< md) */}
-      <div className="md:hidden divide-y-2 divide-zinc-800">
+      <div className="md:hidden divide-y divide-zinc-800/60">
         {accounts.length === 0 ? (
           <div className="p-8 text-center text-zinc-400">
-            <p className="text-sm font-bold">Belum ada akun Google Drive terhubung.</p>
+            <p className="text-sm font-medium text-zinc-300">Belum ada akun Google Drive terhubung.</p>
             <button
               onClick={handleAddAccount}
-              className="mt-3 px-4 py-2 bg-cyan-400 text-black font-black uppercase text-xs rounded-lg border-2 border-black shadow-[3px_3px_0px_0px_#000]"
+              className="mt-3 px-4 py-2 bg-cyan-500 text-black font-semibold text-xs rounded-xl shadow-sm"
             >
               Hubungkan Drive Sekarang
             </button>
@@ -116,7 +116,7 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
             const isMid = usagePct > 60;
 
             return (
-              <div key={acc.id} className="p-4 space-y-3 bg-zinc-900/60">
+              <div key={acc.id} className="p-4 space-y-3 bg-zinc-900/40">
                 {/* Account info row */}
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -124,23 +124,23 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
                       <img
                         src={acc.avatar_url}
                         alt={acc.display_name}
-                        className="w-10 h-10 rounded-lg object-cover border-2 border-zinc-600 shadow-[2px_2px_0px_0px_#000] shrink-0"
+                        className="w-10 h-10 rounded-xl object-cover border border-zinc-700/60 shrink-0"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-lg bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center text-zinc-300 shadow-[2px_2px_0px_0px_#000] shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-750 flex items-center justify-center text-zinc-300 shrink-0">
                         <User className="w-5 h-5" />
                       </div>
                     )}
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <p className="font-bold text-white text-xs tracking-tight truncate">
+                        <p className="font-semibold text-white text-xs tracking-tight truncate">
                           {acc.display_name || 'Google Account'}
                         </p>
-                        <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-emerald-400/10 text-emerald-400 border border-emerald-500/30 shrink-0">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-sans font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
                           Active
                         </span>
                       </div>
-                      <p className="text-[11px] font-mono text-zinc-400 truncate">{acc.email}</p>
+                      <p className="text-[11px] font-sans text-zinc-400 truncate">{acc.email}</p>
                     </div>
                   </div>
 
@@ -149,7 +149,7 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
                     <button
                       onClick={() => handleSync(acc)}
                       disabled={syncingId === acc.id}
-                      className="p-2 text-zinc-300 hover:text-white bg-zinc-800 border-2 border-zinc-700 rounded-lg shadow-[2px_2px_0px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition disabled:opacity-50"
+                      className="p-2 text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-750/50 rounded-xl transition disabled:opacity-50"
                       title="Sync kuota"
                     >
                       <RefreshCw
@@ -159,7 +159,7 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
                     <button
                       onClick={() => handleDelete(acc)}
                       disabled={deletingId === acc.id}
-                      className="p-2 text-rose-400 hover:text-rose-300 bg-rose-500/10 border-2 border-rose-500/40 rounded-lg shadow-[2px_2px_0px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition disabled:opacity-50"
+                      className="p-2 text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl transition disabled:opacity-50"
                       title="Putuskan akun"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -169,15 +169,15 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
 
                 {/* Storage Meter Bar */}
                 <div className="space-y-1.5">
-                  <div className="w-full h-3 bg-zinc-950 border-2 border-zinc-700 rounded-sm p-0.5 overflow-hidden">
+                  <div className="w-full h-2.5 bg-zinc-950/80 border border-zinc-800 rounded-full p-0.5 overflow-hidden">
                     <div
-                      className={`h-full transition-all duration-300 rounded-[1px] ${
+                      className={`h-full transition-all duration-300 rounded-full ${
                         isHigh ? 'bg-rose-500' : isMid ? 'bg-amber-400' : 'bg-emerald-400'
                       }`}
                       style={{ width: `${Math.min(Math.max(usagePct, 2), 100)}%` }}
                     />
                   </div>
-                  <div className="flex justify-between items-center text-[10px] font-mono font-bold">
+                  <div className="flex justify-between items-center text-[10px] font-mono">
                     <span className={isHigh ? 'text-rose-400' : isMid ? 'text-amber-400' : 'text-emerald-400'}>
                       {usagePct.toFixed(1)}% Terpakai
                     </span>
@@ -189,17 +189,17 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
 
                 {/* Storage breakdown pills */}
                 <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
-                  <div className="bg-zinc-950 p-1.5 rounded border border-zinc-800">
-                    <span className="text-[10px] text-zinc-500 block uppercase">Total</span>
-                    <span className="font-bold text-zinc-200">{formatBytes(capacity)}</span>
+                  <div className="bg-zinc-950/60 p-2 rounded-xl border border-zinc-800/80">
+                    <span className="text-[10px] text-zinc-500 block uppercase font-sans">Total</span>
+                    <span className="font-semibold text-zinc-200">{formatBytes(capacity)}</span>
                   </div>
-                  <div className="bg-zinc-950 p-1.5 rounded border border-zinc-800">
-                    <span className="text-[10px] text-zinc-500 block uppercase">Used</span>
-                    <span className="font-bold text-zinc-300">{formatBytes(used)}</span>
+                  <div className="bg-zinc-950/60 p-2 rounded-xl border border-zinc-800/80">
+                    <span className="text-[10px] text-zinc-500 block uppercase font-sans">Used</span>
+                    <span className="font-semibold text-zinc-300">{formatBytes(used)}</span>
                   </div>
-                  <div className="bg-zinc-950 p-1.5 rounded border border-zinc-800">
-                    <span className="text-[10px] text-zinc-500 block uppercase">Free</span>
-                    <span className="font-bold text-emerald-400">{formatBytes(available)}</span>
+                  <div className="bg-zinc-950/60 p-2 rounded-xl border border-zinc-800/80">
+                    <span className="text-[10px] text-zinc-500 block uppercase font-sans">Free</span>
+                    <span className="font-semibold text-emerald-400">{formatBytes(available)}</span>
                   </div>
                 </div>
               </div>
@@ -210,18 +210,18 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
 
       {/* Desktop Accounts Table (hidden on mobile < md) */}
       <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-zinc-950 text-zinc-400 font-mono font-bold border-b-2 border-zinc-700 uppercase tracking-wider text-[11px]">
+        <table className="w-full text-left text-xs font-sans">
+          <thead className="bg-zinc-950/90 text-zinc-400 font-semibold border-b border-zinc-800/80 text-[11px] uppercase tracking-wider">
             <tr>
-              <th className="py-3 px-4">Account</th>
-              <th className="py-3 px-4">Capacity</th>
-              <th className="py-3 px-4">Used</th>
-              <th className="py-3 px-4">Available</th>
-              <th className="py-3 px-4">Usage Meter</th>
-              <th className="py-3 px-4 text-right">Actions</th>
+              <th className="py-3.5 px-4 font-semibold">Account</th>
+              <th className="py-3.5 px-4 font-semibold">Capacity</th>
+              <th className="py-3.5 px-4 font-semibold">Used</th>
+              <th className="py-3.5 px-4 font-semibold">Available</th>
+              <th className="py-3.5 px-4 font-semibold">Usage Meter</th>
+              <th className="py-3.5 px-4 font-semibold text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y-2 divide-zinc-800 text-zinc-300">
+          <tbody className="divide-y divide-zinc-800/50 text-zinc-300">
             {accounts.map((acc) => {
               const capacity = acc.storage_limit || 0;
               const used = acc.storage_usage || 0;
@@ -234,7 +234,7 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
               const isMid = usagePct > 60;
 
               return (
-                <tr key={acc.id} className="hover:bg-zinc-800/60 transition group">
+                <tr key={acc.id} className="hover:bg-zinc-800/40 transition group">
                   {/* Account Info */}
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-3">
@@ -242,50 +242,50 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
                         <img
                           src={acc.avatar_url}
                           alt={acc.display_name}
-                          className="w-9 h-9 rounded-lg object-cover border-2 border-zinc-600 shadow-[2px_2px_0px_0px_#000]"
+                          className="w-9 h-9 rounded-xl object-cover border border-zinc-700/60 shadow-sm"
                         />
                       ) : (
-                        <div className="w-9 h-9 rounded-lg bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center text-zinc-300 shadow-[2px_2px_0px_0px_#000]">
+                        <div className="w-9 h-9 rounded-xl bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center text-zinc-300">
                           <User className="w-4 h-4" />
                         </div>
                       )}
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <p className="font-bold text-white text-xs tracking-tight">{acc.display_name || 'Google Account'}</p>
-                          <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-emerald-400/10 text-emerald-400 border border-emerald-500/30">
+                          <p className="font-semibold text-white text-xs tracking-tight">{acc.display_name || 'Google Account'}</p>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-sans font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                             Active
                           </span>
                         </div>
-                        <p className="text-[11px] font-mono text-zinc-400">{acc.email}</p>
+                        <p className="text-[11px] font-sans text-zinc-400">{acc.email}</p>
                       </div>
                     </div>
                   </td>
 
                   {/* Total Limit */}
-                  <td className="py-3.5 px-4 font-mono text-xs text-white font-bold">
-                    <span className="px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-200">
+                  <td className="py-3.5 px-4 font-mono text-xs text-zinc-200">
+                    <span className="px-2 py-0.5 rounded-lg bg-zinc-800/60 border border-zinc-700/50">
                       {formatBytes(capacity)}
                     </span>
                   </td>
 
                   {/* Used */}
-                  <td className="py-3.5 px-4 font-mono text-xs text-zinc-300 font-semibold">
+                  <td className="py-3.5 px-4 font-mono text-xs text-zinc-300">
                     {formatBytes(used)}
                   </td>
 
                   {/* Free Storage */}
-                  <td className="py-3.5 px-4 font-mono text-xs font-bold text-emerald-400">
-                    <span className="px-2 py-0.5 rounded bg-emerald-950/40 border border-emerald-500/40 text-emerald-400">
+                  <td className="py-3.5 px-4 font-mono text-xs font-semibold text-emerald-400">
+                    <span className="px-2 py-0.5 rounded-lg bg-emerald-950/30 border border-emerald-500/30 text-emerald-400">
                       {formatBytes(available)}
                     </span>
                   </td>
 
-                  {/* Meter Bar Neo-Brutalist */}
+                  {/* Meter Bar */}
                   <td className="py-3.5 px-4 w-48">
                     <div className="space-y-1.5">
-                      <div className="w-full h-3 bg-zinc-950 border-2 border-zinc-700 rounded-sm p-0.5 overflow-hidden">
+                      <div className="w-full h-2.5 bg-zinc-950/80 border border-zinc-800 rounded-full p-0.5 overflow-hidden">
                         <div
-                          className={`h-full transition-all duration-300 rounded-[1px] ${
+                          className={`h-full transition-all duration-300 rounded-full ${
                             isHigh
                               ? 'bg-rose-500'
                               : isMid
@@ -295,7 +295,7 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
                           style={{ width: `${Math.min(Math.max(usagePct, 2), 100)}%` }}
                         />
                       </div>
-                      <div className="flex justify-between items-center text-[10px] font-mono font-bold">
+                      <div className="flex justify-between items-center text-[10px] font-mono">
                         <span className={isHigh ? 'text-rose-400' : isMid ? 'text-amber-400' : 'text-emerald-400'}>
                           {usagePct.toFixed(1)}% Used
                         </span>
@@ -312,7 +312,7 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
                       <button
                         onClick={() => handleSync(acc)}
                         disabled={syncingId === acc.id}
-                        className="p-2 text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-750 border-2 border-zinc-700 rounded-lg shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50"
+                        className="p-2 text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-750/50 rounded-xl transition-all disabled:opacity-50"
                         title="Sync kuota dari Google Drive API"
                       >
                         <RefreshCw
@@ -322,7 +322,7 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
                       <button
                         onClick={() => handleDelete(acc)}
                         disabled={deletingId === acc.id}
-                        className="p-2 text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border-2 border-rose-500/40 rounded-lg shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50"
+                        className="p-2 text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl transition-all disabled:opacity-50"
                         title="Putuskan akun drive ini"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

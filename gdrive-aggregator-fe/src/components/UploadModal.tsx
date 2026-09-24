@@ -72,20 +72,22 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-zinc-900 border-2 border-zinc-750 rounded-xl w-full max-w-lg shadow-[8px_8px_0px_0px_#000] overflow-hidden font-mono">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+      <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 rounded-2xl w-full max-w-lg shadow-2xl shadow-black/80 overflow-hidden font-sans">
         {/* Modal Header */}
-        <div className="px-5 py-4 border-b-2 border-zinc-700 bg-zinc-950 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-white">
-            <UploadCloud className="w-5 h-5 text-cyan-400 stroke-[2.5]" />
-            <h3 className="text-xs font-black uppercase tracking-wider">Unggah ke Google Drive</h3>
+        <div className="px-5 py-4 border-b border-zinc-800/80 bg-zinc-950/70 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 text-white">
+            <span className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+              <UploadCloud className="w-4 h-4" />
+            </span>
+            <h3 className="text-sm font-semibold">Unggah ke Google Drive</h3>
           </div>
           <button
             onClick={handleClose}
             disabled={isUploading}
-            className="text-zinc-400 hover:text-white p-1 rounded-lg border-2 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800 transition disabled:opacity-50 shadow-[2px_2px_0px_0px_#000]"
+            className="text-zinc-400 hover:text-white p-1.5 rounded-xl hover:bg-zinc-800/80 transition disabled:opacity-50"
           >
-            <X className="w-4 h-4 stroke-[2.5]" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -93,14 +95,14 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         <div className="p-5 space-y-4">
           {/* Target Account Selection */}
           <div>
-            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-medium text-zinc-300 mb-1.5">
               Tujuan Akun Drive
             </label>
             <select
               value={accountId}
               onChange={(e) => setAccountId(Number(e.target.value))}
               disabled={isUploading}
-              className="w-full bg-zinc-950 border-2 border-zinc-700 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-cyan-400 shadow-[2px_2px_0px_0px_#000] cursor-pointer"
+              className="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-zinc-200 focus:outline-none focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/20 cursor-pointer"
             >
               <option value={0}>Auto-Routing (Akun dengan sisa ruang terbanyak)</option>
               {accounts.map((acc) => {
@@ -117,8 +119,10 @@ export const UploadModal: React.FC<UploadModalProps> = ({
           {/* File Selector / Drop Area */}
           <div
             onClick={() => !isUploading && fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer transition shadow-[2px_2px_0px_0px_#000] ${
-              file ? 'border-cyan-400 bg-cyan-950/20' : 'border-zinc-700 hover:border-cyan-400 bg-zinc-950'
+            className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition ${
+              file
+                ? 'border-cyan-500/50 bg-cyan-500/5'
+                : 'border-zinc-800 hover:border-zinc-700 bg-zinc-950/40 hover:bg-zinc-950/60'
             }`}
           >
             <input
@@ -130,16 +134,19 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 
             {file ? (
               <div className="space-y-1">
-                <p className="text-sm font-bold text-white truncate max-w-sm">{file.name}</p>
-                <p className="text-xs font-mono text-cyan-400 font-bold">{formatBytes(file.size)}</p>
-                <p className="text-[11px] text-zinc-400 pt-1 font-sans">Klik untuk mengganti file</p>
+                <p className="text-sm font-semibold text-white truncate max-w-sm">{file.name}</p>
+                <p className="text-xs font-mono text-cyan-400 font-medium">{formatBytes(file.size)}</p>
+                <p className="text-[11px] text-zinc-400 pt-1">Klik untuk mengganti file</p>
               </div>
             ) : (
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-zinc-200 uppercase tracking-wide">
+              <div className="space-y-1.5">
+                <div className="w-10 h-10 rounded-xl bg-zinc-800/60 border border-zinc-750/60 flex items-center justify-center text-zinc-300 mx-auto mb-2">
+                  <UploadCloud className="w-5 h-5 text-cyan-400" />
+                </div>
+                <p className="text-xs font-medium text-zinc-200">
                   Pilih file dari komputer atau seret ke sini
                 </p>
-                <p className="text-[11px] text-zinc-400 font-sans">Semua format file didukung</p>
+                <p className="text-[11px] text-zinc-500">Semua format file didukung</p>
               </div>
             )}
           </div>
@@ -147,13 +154,13 @@ export const UploadModal: React.FC<UploadModalProps> = ({
           {/* Upload Progress Bar */}
           {isUploading && (
             <div className="space-y-1.5 pt-2">
-              <div className="flex justify-between text-xs font-mono text-zinc-300 font-bold uppercase">
+              <div className="flex justify-between text-xs text-zinc-300 font-medium">
                 <span>Mengunggah file...</span>
-                <span className="text-cyan-400">{progress}%</span>
+                <span className="text-cyan-400 font-mono font-semibold">{progress}%</span>
               </div>
-              <div className="w-full h-3 bg-zinc-950 border-2 border-zinc-700 rounded-md overflow-hidden p-0.5 shadow-[1px_1px_0px_0px_#000]">
+              <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden p-0.5 border border-zinc-800">
                 <div
-                  className="h-full bg-cyan-400 transition-all duration-150 rounded-sm"
+                  className="h-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all duration-150 rounded-full"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -162,12 +169,12 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-5 py-3.5 bg-zinc-950 border-t-2 border-zinc-700 flex justify-end gap-2 font-mono">
+        <div className="px-5 py-3.5 bg-zinc-950/70 border-t border-zinc-800/80 flex justify-end gap-2.5">
           <button
             type="button"
             onClick={handleClose}
             disabled={isUploading}
-            className="px-3.5 py-1.5 text-xs font-bold text-zinc-400 hover:text-white transition"
+            className="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-800/60 transition"
           >
             Batal
           </button>
@@ -175,7 +182,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
             type="button"
             onClick={handleStartUpload}
             disabled={!file || isUploading}
-            className="px-4 py-1.5 text-xs font-black uppercase tracking-wider bg-cyan-400 hover:bg-cyan-300 text-black border-2 border-black rounded shadow-[2px_2px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50 disabled:pointer-events-none"
+            className="px-4 py-2 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black rounded-xl shadow-sm transition-all disabled:opacity-50 disabled:pointer-events-none"
           >
             {isUploading ? 'Mengunggah...' : 'Mulai Unggah'}
           </button>
